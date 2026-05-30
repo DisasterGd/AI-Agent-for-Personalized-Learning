@@ -1,0 +1,24 @@
+# 密钥&环境变量
+.env
+
+# 虚拟环境
+flask-env/
+venv/
+.venv/
+env/
+
+# Python编译文件
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+
+# IDE配置
+.idea/
+*.iml
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
