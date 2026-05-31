@@ -59,11 +59,6 @@ app.register_blueprint(ai_bp)
 app.register_blueprint(views_bp)
 
 
-# 初始化建表
-# def init_db():
-#     with app.app_context():
-#         db.create_all()
-#         print("✅ 数据库表创建成功")
 # 初始化建表函数
 def init_db():
     with app.app_context():
@@ -74,4 +69,3 @@ def init_db():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
-
