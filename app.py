@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
@@ -48,7 +48,6 @@ class LearningPath(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     path_content = db.Column(db.Text, nullable=False)
 
-
 # 注册蓝图
 from user_routes import user_bp
 from ai_routes import ai_bp
@@ -58,7 +57,14 @@ app.register_blueprint(user_bp)
 app.register_blueprint(ai_bp)
 app.register_blueprint(views_bp)
 
+@app.route('/')    return render_template('login.html')
 
+@app.route('/login')
+def login_page():
+
+@app.route('/index')
+def index_page():
+    return render_template('index.html')
 # 初始化建表函数
 def init_db():
     with app.app_context():

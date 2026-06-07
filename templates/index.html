@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性化学习多智能体系统 - 核心交互原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .typing-cursor::after { content: '▍'; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex overflow-hidden text-gray-800 font-sans">
+
+    <!-- 左侧边栏 -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col transition-all duration-300">
+        <div class="p-4 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h1 class="text-lg font-bold text-gray-800 tracking-wide">AI 学习助手</h1>
+        </div>
+        <div class="flex-1 overflow-y-auto p-3">
+            <button class="w-full flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2.5 rounded-lg font-medium transition hover:bg-blue-100 mb-6">
+                <i class="fa-solid fa-plus"></i> 新建学习对话
+            </button>
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">最近学习课程</h2>
+            <ul class="space-y-1">
+                <li><a href=" " class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-sm text-gray-700"><i class="fa-brands fa-python text-gray-400"></i> Python 面向对象编程</a ></li>
+                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-sm text-gray-700"><i class="fa-solid fa-database text-gray-400"></i> MySQL 基础查询练习</a ></li>
+            </ul>
+        </div>
+        <div class="p-4 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Student&background=random" alt="User" class="w-9 h-9 rounded-full">
+                <div>
+                    <p class="text-sm font-semibold">同学，你好</p >
+                    <p class="text-xs text-gray-500">计算机科学与技术</p >
+                </div>
+            </div>
+            <button onclick="logout()" class="text-gray-400 hover:text-red-500 transition">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- 中间主区域 -->
+    <main class="flex-1 flex flex-col relative bg-white">
+        <header class="h-14 border-b border-gray-200 flex items-center justify-between px-6 bg-white/80 backdrop-blur-sm z-10">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-600">当前领域：</span>
+                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md font-semibold">Python 方向知识库</span>
+            </div>
+            <div class="flex gap-3">
+                <button class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-share-nodes"></i></button>
+                <button class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            </div>
+        </header>
+
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6 pb-32">
+            <!-- 只保留这一条 AI 欢迎语，其余示例对话已删除 -->
+            <div class="flex gap-4 max-w-4xl mx-auto">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0 mt-1">
+                    <i class="fa-solid fa-robot text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-gray-800 leading-relaxed text-[15px]">你好！我是你的多智能体学习助手。</p >
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-10 pb-6 px-6">
+            <div class="max-w-4xl mx-auto relative bg-white border border-gray-300 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+                <textarea rows="1" class="w-full bg-transparent border-0 focus:ring-0 resize-none py-4 pl-4 pr-16 text-[15px] placeholder-gray-400 max-h-32" placeholder="输入你想学习的内容，或描述你的学习困惑 (支持流式响应)..."></textarea>
+                <div class="absolute right-2 bottom-2 flex items-center gap-1">
+                    <button class="p-2 text-gray-400 hover:text-blue-600 transition" title="上传代码或文件"><i class="fa-solid fa-paperclip"></i></button>
+                    <button id="send-btn" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+            <div class="text-center mt-2 text-xs text-gray-400">内容由多智能体大模型生成，可能会有错误，请注意甄别。</div>
+        </div>
+    </main>
+
+    <!-- 右侧边栏 -->
+    <aside class="w-80 bg-gray-50 border-l border-gray-200 flex flex-col">
+        <div class="p-4 border-b border-gray-200">
+            <h2 class="text-md font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-blue-600"></i> 动态学习画像</h2>
+            <p class="text-xs text-gray-500 mt-1">随对话实时提取更新</p >
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-5">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">画像维度 (6个维度)</h3>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-blue-600">基础:</span> C语言, 逻辑清晰</span>
+                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-green-600">风格:</span> 对比学习, 视觉型</span>
+                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-red-500">短板:</span> OOP概念, 多态</span>
+                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-purple-600">进度:</span> Python 进阶中</span>
+                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-orange-500">目标:</span> 掌握数据分析基础</span>
+                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-teal-600">活跃:</span> 晚间学习者</span>
+                </div>
+            </div>
+            <hr class="border-gray-200">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-700">个性化学习路径</h3>
+                    <button class="text-xs text-blue-600 hover:underline">重新规划</button>
+                </div>
+                <div class="relative border-l border-gray-300 ml-2 space-y-4">
+                    <div class="pl-4 relative"><div class="absolute w-3 h-3 bg-green-500 rounded-full -left-[6.5px] top-1.5 ring-4 ring-gray-50"></div><p class="text-xs font-bold text-gray-800">1. Python 基础语法</p ><p class="text-xs text-gray-500 mt-1">已掌握变量、循环、函数</p ></div>
+                    <div class="pl-4 relative"><div class="absolute w-3 h-3 bg-blue-600 rounded-full -left-[6.5px] top-1.5 ring-4 ring-blue-50 animate-pulse"></div><p class="text-xs font-bold text-blue-700">2. 攻克 OOP 面向对象</p ><p class="text-xs text-gray-500 mt-1">正在学习继承与多态...</p ><button class="mt-2 text-[11px] bg-blue-100 text-blue-700 px-2 py-1 rounded">查看专项任务</button></div>
+                    <div class="pl-4 relative"><div class="absolute w-3 h-3 bg-gray-300 rounded-full -left-[6.5px] top-1.5 ring-4 ring-gray-50"></div><p class="text-xs font-bold text-gray-400">3. 异常处理与文件IO</p ><p class="text-xs text-gray-400 mt-1">待解锁</p ></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        // 登出函数（全局）
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_info');
+            window.location.href = '/login';  // 使用 Flask 路由
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查登录状态
+            const token = localStorage.getItem('auth_token');
+            const userInfoStr = localStorage.getItem('user_info');
+            if (!token || !userInfoStr) {
+                window.location.href = '/login';
+                return;
+            }
+
+            let userInfo;
+            try {
+                userInfo = JSON.parse(userInfoStr);
+            } catch (e) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // 更新侧边栏用户信息
+            const userNameSpan = document.querySelector('aside:first-child .p-4.border-t .text-sm.font-semibold');
+            const userMajorSpan = document.querySelector('aside:first-child .p-4.border-t .text-xs.text-gray-500');
+            if (userNameSpan) userNameSpan.textContent = userInfo.name || '同学';
+            if (userMajorSpan) {
+                const majorMap = {
+                    'cs': '计算机科学与技术',
+                    'ai': '人工智能',
+                    'ee': '电子信息工程',
+                    'se': '软件工程',
+                    'ds': '数据科学与大数据技术',
+                    'ce': '通信工程',
+                    'other': '其他'
+                };
+                const major = majorMap[userInfo.major] || userInfo.major || '计算机科学与技术';
+                userMajorSpan.textContent = major;
+            }
+            const avatarImg = document.querySelector('aside:first-child .p-4.border-t img');
+            if (avatarImg && userInfo.name) {
+                avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userInfo.name)}&background=random`;
+            }
+
+            // 聊天功能
+            const chatContainer = document.getElementById('chat-container');
+            const textarea = document.querySelector('textarea');
+            const sendBtn = document.getElementById('send-btn');
+
+            async function handleSend() {
+                const text = textarea.value.trim();
+                if (!text) return;
+
+                const user = JSON.parse(localStorage.getItem('user_info') || '{}');
+                const studentId = user.student_id || user.id || 1;
+
+                appendUserMessage(text);
+                textarea.value = '';
+                const loadingId = 'loading-' + Date.now();
+                appendAIMessage('<i class="fa-solid fa-spinner fa-spin"></i> 正在请求后端...', loadingId);
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: studentId, message: text })
+                    });
+                    const data = await response.json();
+                    const answer = data.choices[0].message.content;
+                    document.getElementById(loadingId).innerHTML = answer;
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById(loadingId).innerHTML = '<span class="text-red-500">连接后端失败</span>';
+                }
+            }
+
+            function appendUserMessage(text) {
+                const msgHTML = `
+                <div class="flex gap-4 max-w-4xl mx-auto flex-row-reverse mt-4">
+                    <img src="https://ui-avatars.com/api/?name=Student&background=random" alt="User" class="w-8 h-8 rounded-full shrink-0 mt-1">
+                    <div class="bg-gray-100 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[80%]">
+                        <p class="text-gray-800 text-[15px] whitespace-pre-wrap">${escapeHtml(text)}</p >
+                    </div>
+                </div>`;
+                chatContainer.insertAdjacentHTML('beforeend', msgHTML);
+                scrollToBottom();
+            }
+
+            function appendAIMessage(text, id) {
+                const msgHTML = `
+                <div class="flex gap-4 max-w-4xl mx-auto mt-4">
+                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0 mt-1">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p id="${id}" class="text-gray-800 leading-relaxed text-[15px]">${text}</p >
+                    </div>
+                </div>`;
+                chatContainer.insertAdjacentHTML('beforeend', msgHTML);
+                scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function escapeHtml(str) {
+                return str.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
+            }
+
+            sendBtn.addEventListener('click', handleSend);
+            textarea.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

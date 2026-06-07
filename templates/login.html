@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 / 注册 — AI 学习助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue-primary: #2563eb;
+            --blue-light: #eff6ff;
+            --gray-soft: #f8fafc;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', 'PingFang SC', sans-serif;
+            background: var(--gray-soft);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ===== 左侧装饰面板 ===== */
+        .left-panel {
+            width: 45%;
+            background: linear-gradient(145deg, #1d4ed8 0%, #1e40af 40%, #1e3a8a 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 3.5rem;
+            overflow: hidden;
+        }
+
+        /* 背景几何装饰 */
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            top: -150px; right: -150px;
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            bottom: -80px; left: -80px;
+        }
+
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: white;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .left-panel h2 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .left-panel p {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            max-width: 320px;
+        }
+
+        /* 特性标签列表 */
+        .feature-list {
+            margin-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+        }
+
+        .feature-dot {
+            width: 6px; height: 6px;
+            background: #60a5fa;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ===== 右侧表单面板 ===== */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .form-card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .form-card h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-card .subtitle {
+            color: #94a3b8;
+            font-size: 0.88rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Tab 切换 */
+        .tab-bar {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 1.8rem;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.55rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 7px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--blue-primary);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 表单字段 */
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.4rem;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 0.7rem 0.9rem 0.7rem 2.3rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 9px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            background: white;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        .field-input:focus {
+            border-color: var(--blue-primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .field-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+        }
+
+        /* 密码可见切换 */
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 2px;
+            transition: color 0.2s;
+        }
+        .toggle-pw:hover { color: #475569; }
+
+        /* 提交按钮 */
+        .submit-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--blue-primary);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+
+        .submit-btn:hover {
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+
+        .submit-btn:active { transform: scale(0.98); }
+
+        .submit-btn:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 消息提示 */
+        .msg-box {
+            padding: 0.65rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.83rem;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .msg-box.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            display: flex;
+        }
+
+        .msg-box.success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+            display: flex;
+        }
+
+        /* 页脚链接 */
+        .form-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* 分隔线 */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.2rem 0;
+            color: #cbd5e1;
+            font-size: 0.78rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        /* 旋转动画 */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fa-spin-custom { animation: spin 0.8s linear infinite; }
+
+        /* 专业方向选择 */
+        .field-select {
+            width: 100%;
+            padding: 0.7rem 0.9rem 0.7rem 2.3rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 9px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            background: white;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .field-select:focus {
+            border-color: var(--blue-primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .left-panel { display: none; }
+            .right-panel { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧装饰面板 -->
+    <div class="left-panel">
+        <div class="brand-icon">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h2>你的专属<br>AI 学习伙伴</h2>
+        <p>基于多智能体协同架构，为每位同学生成个性化学习资源与动态路径规划。</p>
+
+        <div class="feature-list">
+            <div class="feature-item">
+                <div class="feature-dot"></div>
+                <span>对话式构建 6 维动态学习画像</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-dot"></div>
+                <span>多智能体协同生成多模态资源</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-dot"></div>
+                <span>个性化路径规划 · 精准资源推送</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-dot"></div>
+                <span>学习效果实时追踪与智能评估</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧表单面板 -->
+    <div class="right-panel">
+        <div class="form-card">
+            <h1>欢迎使用</h1>
+            <p class="subtitle">登录或注册，开启你的个性化学习之旅</p>
+
+            <!-- Tab 切换 -->
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">账号登录</button>
+                <button class="tab-btn" id="tab-register" onclick="switchTab('register')">注册新账号</button>
+            </div>
+
+            <!-- 消息提示框 -->
+            <div class="msg-box" id="msg-box">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="msg-text"></span>
+            </div>
+
+            <!-- ========== 登录表单 ========== -->
+            <div id="form-login">
+                <div class="field-group">
+                    <div>
+                        <label class="field-label">账号 / 学号</label>
+                        <div class="input-wrap">
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <input type="text" id="login-username" class="field-input" placeholder="请输入账号或学号" autocomplete="username">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">密码</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="login-password" class="field-input" placeholder="请输入密码" autocomplete="current-password">
+                            <button class="toggle-pw" onclick="togglePassword('login-password', this)" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="submit-btn" id="login-btn" onclick="handleLogin()">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>登录</span>
+                </button>
+
+                <div class="form-footer">
+                    还没有账号？<a href="#" style="color:#2563eb;" onclick="switchTab('register')">立即注册</a>
+                </div>
+            </div>
+
+            <!-- ========== 注册表单 ========== -->
+            <div id="form-register" style="display:none;">
+                <div class="field-group">
+                    <div>
+                        <label class="field-label">学号</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-id-card input-icon"></i>
+                            <input type="text" id="reg-student-id" class="field-input" placeholder="请输入学号（将作为登录账号）">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">姓名</label>
+                        <div class="input-wrap">
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <input type="text" id="reg-name" class="field-input" placeholder="请输入真实姓名">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">专业方向</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-book-open input-icon"></i>
+                            <select id="reg-major" class="field-select">
+                                <option value="">请选择你的专业方向</option>
+                                <option value="cs">计算机科学与技术</option>
+                                <option value="ai">人工智能</option>
+                                <option value="ee">电子信息工程</option>
+                                <option value="se">软件工程</option>
+                                <option value="ds">数据科学与大数据技术</option>
+                                <option value="ce">通信工程</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">密码</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="reg-password" class="field-input" placeholder="至少 8 位，包含字母和数字" autocomplete="new-password">
+                            <button class="toggle-pw" onclick="togglePassword('reg-password', this)" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">确认密码</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="reg-confirm" class="field-input" placeholder="再次输入密码" autocomplete="new-password">
+                            <button class="toggle-pw" onclick="togglePassword('reg-confirm', this)" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="submit-btn" id="register-btn" onclick="handleRegister()">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>注册并开始学习</span>
+                </button>
+
+                <div class="form-footer">
+                    已有账号？<a href="#" style="color:#2563eb;" onclick="switchTab('login')">直接登录</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+   <script>
+    // ============================================================
+    // 配置项：修改为你们后端的实际地址
+    // ============================================================
+    const API_BASE = 'http://127.0.0.1:5000';
+
+    // ============================================================
+    // Tab 切换
+    // ============================================================
+    function switchTab(tab) {
+        clearMsg();
+        document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
+        document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+        document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    }
+
+    // ============================================================
+    // 密码显示/隐藏
+    // ============================================================
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon  = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-regular fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fa-regular fa-eye';
+        }
+    }
+
+    // ============================================================
+    // 消息提示
+    // ============================================================
+    function showMsg(text, type = 'error') {
+        const box  = document.getElementById('msg-box');
+        const span = document.getElementById('msg-text');
+        box.className = `msg-box ${type}`;
+        span.textContent = text;
+        box.querySelector('i').className =
+            type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+    }
+
+    function clearMsg() {
+        const box = document.getElementById('msg-box');
+        box.className = 'msg-box';
+    }
+
+    // ============================================================
+    // 表单校验工具
+    // ============================================================
+    function validatePassword(pw) {
+        return pw.length >= 8 && /[a-zA-Z]/.test(pw) && /[0-9]/.test(pw);
+    }
+
+    function setLoading(btnId, loading) {
+        const btn = document.getElementById(btnId);
+        btn.disabled = loading;
+        const icon = btn.querySelector('i');
+        const text = btn.querySelector('span');
+        if (loading) {
+            icon.className = 'fa-solid fa-circle-notch fa-spin-custom';
+            text.textContent = '请稍候…';
+        } else {
+            if (btnId === 'login-btn') {
+                icon.className = 'fa-solid fa-arrow-right-to-bracket';
+                text.textContent = '登录';
+            } else {
+                icon.className = 'fa-solid fa-user-plus';
+                text.textContent = '注册并开始学习';
+            }
+        }
+    }
+
+    // ============================================================
+    // 登录逻辑 ✅ 已修复兼容你的后端
+    // ============================================================
+    async function handleLogin() {
+        clearMsg();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        if (!username) { showMsg('请输入账号或学号'); return; }
+        if (!password)  { showMsg('请输入密码'); return; }
+
+        setLoading('login-btn', true);
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+
+            // ✅ 修复：兼容后端返回格式
+            if (data.success === true || data.token) {
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user_info', JSON.stringify(data.user));
+                showMsg('登录成功，正在跳转…', 'success');
+                setTimeout(() => { window.location.href = '/index'; }, 800);
+            } else {
+                showMsg(data.message || '账号或密码错误');
+            }
+        } catch (err) {
+            console.error(err);
+            showMsg('无法连接到服务器，请确认后端已启动');
+        } finally {
+            setLoading('login-btn', false);
+        }
+    }
+
+    // ============================================================
+    // 注册逻辑 ✅ 已修复兼容你的后端
+    // ============================================================
+    async function handleRegister() {
+        clearMsg();
+        const studentId = document.getElementById('reg-student-id').value.trim();
+        const name      = document.getElementById('reg-name').value.trim();
+        const major     = document.getElementById('reg-major').value;
+        const password  = document.getElementById('reg-password').value;
+        const confirm   = document.getElementById('reg-confirm').value;
+
+        if (!studentId)           { showMsg('请输入学号'); return; }
+        if (!name)                { showMsg('请输入姓名'); return; }
+        if (!major)               { showMsg('请选择专业方向'); return; }
+        if (!validatePassword(password)) {
+            showMsg('密码至少 8 位，且需包含字母和数字');
+            return;
+        }
+        if (password !== confirm) { showMsg('两次密码不一致'); return; }
+
+        setLoading('register-btn', true);
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    name: name,
+                    major: major,
+                    password: password
+                })
+            });
+
+            const data = await res.json();
+
+            // ✅ 修复：兼容后端返回格式
+            if (data.success === true) {
+    if (data.token) {
+        // 注册接口直接返回了 token（注册即登录）
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user_info', JSON.stringify(data.user));
+        showMsg('注册成功，正在跳转…', 'success');
+        setTimeout(() => { window.location.href = '/index'; }, 800);
+    } else {
+        // 注册后需要手动登录：清空表单，切换到登录页
+        showMsg('注册成功！请登录', 'success');
+        setTimeout(() => switchTab('login'), 2000);
+    }
+}
+            // if (data.success === true) {
+            //     showMsg('注册成功！即将跳转到登录…', 'success');
+            //     setTimeout(() => switchTab('login'), 2000);
+            // } else {
+            //     showMsg(data.message || '注册失败：学号已存在');
+            // }
+        } catch (err) {
+            console.error(err);
+            showMsg('无法连接到服务器，请确认后端已启动');
+        } finally {
+            setLoading('register-btn', false);
+        }
+    }
+
+    // 回车支持
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const isLogin = document.getElementById('form-login').style.display !== 'none';
+            isLogin ? handleLogin() : handleRegister();
+        }
+    });
+
+    // 已登录自动跳转
+    if (localStorage.getItem('auth_token')) {
+        window.location.href = '/index';
+    }
+    </script>
+</body>
+</html>
