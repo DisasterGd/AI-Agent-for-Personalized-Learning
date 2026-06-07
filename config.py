@@ -20,11 +20,11 @@ class Config:
     # # 数据库连接
     # SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
-    # 读取数据库类型，没配置默认走SQLite（队友默认不用MySQL）
+    # 读取数据库类型，没配置默认走SQLite
     DB_TYPE = os.getenv("DB_TYPE", "sqlite")
 
     if DB_TYPE == "mysql":
-        # 你本地开发：沿用原来你的MySQL环境变量配置
+        # 本地开发：沿用原来你的MySQL环境变量配置
         SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
     else:
         # 所有人默认SQLite，Python内置，无需安装任何数据库软件
@@ -35,10 +35,8 @@ class Config:
     # 法二：终端输入set DB_TYPE=mysql（单次生效）
 
     # 数据迁移
-    # # migrate.py 完整一键迁移代码
     # from app import app, db
-    # # 这里导入你项目所有的数据模型表
-    # from models import User, ChatRecord, KnowledgeFile, XXX  # 替换成你自己所有模型
+    # from models import User, ChatRecord, KnowledgeFile
     #
     # with app.app_context():
     #     # 1. 自动在MySQL里生成全部数据表
