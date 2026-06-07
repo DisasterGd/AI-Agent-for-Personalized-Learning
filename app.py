@@ -12,7 +12,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 CORS(app, resources=r"/*", supports_credentials=True)
 
-# 123456
+
 # 数据模型
 class User(db.Model):
     __tablename__ = 'user'
