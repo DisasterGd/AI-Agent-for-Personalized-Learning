@@ -3,248 +3,1439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个性化学习多智能体系统 - 核心交互原型</title>
+    <title>Lumina 学习助手</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .typing-cursor::after { content: '▍'; animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-    </style>
-</head>
-<body class="bg-gray-50 h-screen flex overflow-hidden text-gray-800 font-sans">
-
-    <!-- 左侧边栏 -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col transition-all duration-300">
-        <div class="p-4 border-b border-gray-100 flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                <i class="fa-solid fa-graduation-cap"></i>
-            </div>
-            <h1 class="text-lg font-bold text-gray-800 tracking-wide">AI 学习助手</h1>
-        </div>
-        <div class="flex-1 overflow-y-auto p-3">
-            <button class="w-full flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2.5 rounded-lg font-medium transition hover:bg-blue-100 mb-6">
-                <i class="fa-solid fa-plus"></i> 新建学习对话
-            </button>
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">最近学习课程</h2>
-            <ul class="space-y-1">
-                <li><a href=" " class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-sm text-gray-700"><i class="fa-brands fa-python text-gray-400"></i> Python 面向对象编程</a ></li>
-                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-sm text-gray-700"><i class="fa-solid fa-database text-gray-400"></i> MySQL 基础查询练习</a ></li>
-            </ul>
-        </div>
-        <div class="p-4 border-t border-gray-200 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <img src="https://ui-avatars.com/api/?name=Student&background=random" alt="User" class="w-9 h-9 rounded-full">
-                <div>
-                    <p class="text-sm font-semibold">同学，你好</p >
-                    <p class="text-xs text-gray-500">计算机科学与技术</p >
-                </div>
-            </div>
-            <button onclick="logout()" class="text-gray-400 hover:text-red-500 transition">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </button>
-        </div>
-    </aside>
-
-    <!-- 中间主区域 -->
-    <main class="flex-1 flex flex-col relative bg-white">
-        <header class="h-14 border-b border-gray-200 flex items-center justify-between px-6 bg-white/80 backdrop-blur-sm z-10">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-600">当前领域：</span>
-                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md font-semibold">Python 方向知识库</span>
-            </div>
-            <div class="flex gap-3">
-                <button class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-share-nodes"></i></button>
-                <button class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-            </div>
-        </header>
-
-        <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6 pb-32">
-            <!-- 只保留这一条 AI 欢迎语，其余示例对话已删除 -->
-            <div class="flex gap-4 max-w-4xl mx-auto">
-                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0 mt-1">
-                    <i class="fa-solid fa-robot text-sm"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-gray-800 leading-relaxed text-[15px]">你好！我是你的多智能体学习助手。</p >
-                </div>
-            </div>
-        </div>
-
-        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-10 pb-6 px-6">
-            <div class="max-w-4xl mx-auto relative bg-white border border-gray-300 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-                <textarea rows="1" class="w-full bg-transparent border-0 focus:ring-0 resize-none py-4 pl-4 pr-16 text-[15px] placeholder-gray-400 max-h-32" placeholder="输入你想学习的内容，或描述你的学习困惑 (支持流式响应)..."></textarea>
-                <div class="absolute right-2 bottom-2 flex items-center gap-1">
-                    <button class="p-2 text-gray-400 hover:text-blue-600 transition" title="上传代码或文件"><i class="fa-solid fa-paperclip"></i></button>
-                    <button id="send-btn" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-up"></i></button>
-                </div>
-            </div>
-            <div class="text-center mt-2 text-xs text-gray-400">内容由多智能体大模型生成，可能会有错误，请注意甄别。</div>
-        </div>
-    </main>
-
-    <!-- 右侧边栏 -->
-    <aside class="w-80 bg-gray-50 border-l border-gray-200 flex flex-col">
-        <div class="p-4 border-b border-gray-200">
-            <h2 class="text-md font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-blue-600"></i> 动态学习画像</h2>
-            <p class="text-xs text-gray-500 mt-1">随对话实时提取更新</p >
-        </div>
-        <div class="flex-1 overflow-y-auto p-4 space-y-5">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-2">画像维度 (6个维度)</h3>
-                <div class="flex flex-wrap gap-2">
-                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-blue-600">基础:</span> C语言, 逻辑清晰</span>
-                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-green-600">风格:</span> 对比学习, 视觉型</span>
-                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-red-500">短板:</span> OOP概念, 多态</span>
-                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-purple-600">进度:</span> Python 进阶中</span>
-                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-orange-500">目标:</span> 掌握数据分析基础</span>
-                    <span class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600"><span class="font-semibold text-teal-600">活跃:</span> 晚间学习者</span>
-                </div>
-            </div>
-            <hr class="border-gray-200">
-            <div>
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-gray-700">个性化学习路径</h3>
-                    <button class="text-xs text-blue-600 hover:underline">重新规划</button>
-                </div>
-                <div class="relative border-l border-gray-300 ml-2 space-y-4">
-                    <div class="pl-4 relative"><div class="absolute w-3 h-3 bg-green-500 rounded-full -left-[6.5px] top-1.5 ring-4 ring-gray-50"></div><p class="text-xs font-bold text-gray-800">1. Python 基础语法</p ><p class="text-xs text-gray-500 mt-1">已掌握变量、循环、函数</p ></div>
-                    <div class="pl-4 relative"><div class="absolute w-3 h-3 bg-blue-600 rounded-full -left-[6.5px] top-1.5 ring-4 ring-blue-50 animate-pulse"></div><p class="text-xs font-bold text-blue-700">2. 攻克 OOP 面向对象</p ><p class="text-xs text-gray-500 mt-1">正在学习继承与多态...</p ><button class="mt-2 text-[11px] bg-blue-100 text-blue-700 px-2 py-1 rounded">查看专项任务</button></div>
-                    <div class="pl-4 relative"><div class="absolute w-3 h-3 bg-gray-300 rounded-full -left-[6.5px] top-1.5 ring-4 ring-gray-50"></div><p class="text-xs font-bold text-gray-400">3. 异常处理与文件IO</p ><p class="text-xs text-gray-400 mt-1">待解锁</p ></div>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <script>
-        // 登出函数（全局）
-        function logout() {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_info');
-            window.location.href = '/login';  // 使用 Flask 路由
+        :root {
+            --accent: #7c6af0;          /* 温紫 —— 主强调色 */
+            --accent-hover: #6b58e0;
+            --accent-light: #f0eeff;
+            --accent-mid: #c4bdf8;
+            --bg-page: #f5f4f0;         /* 暖米白 底色 */
+            --bg-sidebar: #efede8;      /* 侧边栏 */
+            --bg-card: #faf9f7;         /* 卡片/主区域 */
+            --border: #e0ddd6;
+            --text-primary: #2a2825;
+            --text-secondary: #6b6660;
+            --text-muted: #a09c96;
+            --sidebar-w: 256px;
+            --right-w: 292px;
+            --success: #4caf81;
+            --warning: #e8a44a;
+            --danger: #e06b6b;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // 检查登录状态
-            const token = localStorage.getItem('auth_token');
-            const userInfoStr = localStorage.getItem('user_info');
-            if (!token || !userInfoStr) {
-                window.location.href = '/login';
-                return;
-            }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-            let userInfo;
-            try {
-                userInfo = JSON.parse(userInfoStr);
-            } catch (e) {
-                window.location.href = '/login';
-                return;
-            }
+        body {
+            font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+        }
 
-            // 更新侧边栏用户信息
-            const userNameSpan = document.querySelector('aside:first-child .p-4.border-t .text-sm.font-semibold');
-            const userMajorSpan = document.querySelector('aside:first-child .p-4.border-t .text-xs.text-gray-500');
-            if (userNameSpan) userNameSpan.textContent = userInfo.name || '同学';
-            if (userMajorSpan) {
-                const majorMap = {
-                    'cs': '计算机科学与技术',
-                    'ai': '人工智能',
-                    'ee': '电子信息工程',
-                    'se': '软件工程',
-                    'ds': '数据科学与大数据技术',
-                    'ce': '通信工程',
-                    'other': '其他'
-                };
-                const major = majorMap[userInfo.major] || userInfo.major || '计算机科学与技术';
-                userMajorSpan.textContent = major;
-            }
-            const avatarImg = document.querySelector('aside:first-child .p-4.border-t img');
-            if (avatarImg && userInfo.name) {
-                avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userInfo.name)}&background=random`;
-            }
+        /* ── 滚动条 ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-            // 聊天功能
-            const chatContainer = document.getElementById('chat-container');
-            const textarea = document.querySelector('textarea');
-            const sendBtn = document.getElementById('send-btn');
+        /* ── 打字光标 ── */
+        .typing-cursor::after { content: '▍'; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
-            async function handleSend() {
-                const text = textarea.value.trim();
-                if (!text) return;
+        /* ══════════════ 左侧边栏 ══════════════ */
+        #left-sidebar {
+            width: var(--sidebar-w);
+            min-width: var(--sidebar-w);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            transition: width .24s cubic-bezier(.4,0,.2,1), min-width .24s cubic-bezier(.4,0,.2,1);
+            overflow: hidden;
+        }
+        #left-sidebar.collapsed { width: 0; min-width: 0; }
 
-                const user = JSON.parse(localStorage.getItem('user_info') || '{}');
-                const studentId = user.student_id || user.id || 1;
+        /* ── 历史记录项 ── */
+        .history-item { position: relative; border-radius: 9px; cursor: pointer; }
+        .history-item .item-actions { display: none; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); gap: 2px; }
+        .history-item:hover .item-actions { display: flex; }
+        .history-item:hover { background: rgba(124,106,240,.07); }
+        .history-item.active { background: var(--accent-light); }
+        .history-item.active .item-title { color: var(--accent); font-weight: 500; }
 
-                appendUserMessage(text);
-                textarea.value = '';
-                const loadingId = 'loading-' + Date.now();
-                appendAIMessage('<i class="fa-solid fa-spinner fa-spin"></i> 正在请求后端...', loadingId);
+        /* ── 用户下拉 ── */
+        #user-dropdown {
+            position: absolute; bottom: 58px; left: 8px; right: 8px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.10);
+            padding: 5px; z-index: 60; display: none;
+            animation: pop-in .16s ease;
+        }
+        #user-dropdown.open { display: block; }
 
-                try {
-                    const response = await fetch('http://127.0.0.1:5000/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user_id: studentId, message: text })
-                    });
-                    const data = await response.json();
-                    const answer = data.choices[0].message.content;
-                    document.getElementById(loadingId).innerHTML = answer;
-                } catch (error) {
-                    console.error(error);
-                    document.getElementById(loadingId).innerHTML = '<span class="text-red-500">连接后端失败</span>';
-                }
-            }
+        .dd-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 7px 10px; border-radius: 8px; font-size: 13px;
+            color: var(--text-primary); cursor: pointer; transition: background .13s;
+        }
+        .dd-item:hover { background: var(--bg-page); }
+        .dd-item.danger { color: var(--danger); }
+        .dd-item.danger:hover { background: #fdf0f0; }
 
-            function appendUserMessage(text) {
-                const msgHTML = `
-                <div class="flex gap-4 max-w-4xl mx-auto flex-row-reverse mt-4">
-                    <img src="https://ui-avatars.com/api/?name=Student&background=random" alt="User" class="w-8 h-8 rounded-full shrink-0 mt-1">
-                    <div class="bg-gray-100 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[80%]">
-                        <p class="text-gray-800 text-[15px] whitespace-pre-wrap">${escapeHtml(text)}</p >
+        /* ══════════════ 右侧侧边栏 ══════════════ */
+        #right-sidebar {
+            width: var(--right-w); min-width: var(--right-w);
+            background: var(--bg-sidebar);
+            border-left: 1px solid var(--border);
+            transition: width .24s cubic-bezier(.4,0,.2,1), min-width .24s cubic-bezier(.4,0,.2,1);
+            overflow: hidden;
+        }
+        #right-sidebar.collapsed { width: 0; min-width: 0; }
+
+        /* ══════════════ Header 下拉菜单通用 ══════════════ */
+        .header-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 11px; box-shadow: 0 8px 28px rgba(0,0,0,.09);
+            padding: 5px; min-width: 200px; z-index: 50; display: none;
+        }
+        .header-dropdown.open { display: block; animation: pop-in .16s ease; }
+        .header-dropdown.right-align { left: auto; right: 0; }
+
+        .hd-option {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 10px; border-radius: 7px; font-size: 13px;
+            color: var(--text-primary); cursor: pointer; transition: background .13s;
+        }
+        .hd-option:hover { background: var(--bg-page); }
+        .hd-option.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+        @keyframes pop-in {
+            from { opacity: 0; transform: scale(.95) translateY(-4px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* ══════════════ 消息气泡 ══════════════ */
+        .msg-user .bubble {
+            background: var(--accent-light);
+            border: 1px solid var(--accent-mid);
+            border-radius: 18px 4px 18px 18px;
+        }
+        .msg-ai .bubble {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px 18px 18px 18px;
+        }
+
+        /* 消息操作 */
+        .msg-wrap:hover .msg-actions { display: flex !important; }
+
+        /* ══════════════ 输入框 ══════════════ */
+        #chat-input {
+            max-height: 160px; overflow-y: auto;
+            font-family: inherit; color: var(--text-primary);
+            background: transparent; resize: none; border: none; outline: none;
+        }
+        #chat-input::placeholder { color: var(--text-muted); }
+
+        #input-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.05);
+            transition: box-shadow .2s, border-color .2s;
+        }
+        #input-card:focus-within {
+            border-color: var(--accent-mid);
+            box-shadow: 0 0 0 3px rgba(124,106,240,.10), 0 2px 12px rgba(0,0,0,.05);
+        }
+
+        /* 工具按钮 */
+        .tool-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 8px;
+            color: var(--text-muted); background: none; border: none; cursor: pointer;
+            transition: color .15s, background .15s;
+        }
+        .tool-btn:hover { color: var(--accent); background: var(--accent-light); }
+
+        /* 发送按钮 */
+        #send-btn {
+            width: 34px; height: 34px; border-radius: 11px;
+            background: var(--accent); color: white; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .15s, transform .1s;
+            flex-shrink: 0;
+        }
+        #send-btn:hover { background: var(--accent-hover); }
+        #send-btn:active { transform: scale(.93); }
+
+        /* ══════════════ 文件预览 ══════════════ */
+        #file-preview-area { display: none; flex-wrap: wrap; gap: 7px; padding: 8px 14px 0; }
+        #file-preview-area.has-files { display: flex; }
+        .file-chip {
+            display: flex; align-items: center; gap: 5px;
+            background: var(--accent-light); border: 1px solid var(--accent-mid);
+            border-radius: 8px; padding: 3px 8px; font-size: 11.5px; color: var(--accent);
+        }
+
+        /* ══════════════ 快捷卡片 ══════════════ */
+        .prompt-card {
+            background: white; border: 1px solid var(--border);
+            border-radius: 13px; padding: 13px 15px; cursor: pointer;
+            transition: border-color .18s, box-shadow .18s, transform .15s;
+        }
+        .prompt-card:hover {
+            border-color: var(--accent-mid);
+            box-shadow: 0 4px 16px rgba(124,106,240,.10);
+            transform: translateY(-2px);
+        }
+
+        /* ══════════════ 模달框 ══════════════ */
+        .modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(42,40,37,.32); backdrop-filter: blur(4px);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-card {
+            background: white; border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(0,0,0,.16);
+            width: 90%; max-width: 460px;
+            animation: modal-in .2s ease;
+        }
+        @keyframes modal-in {
+            from { opacity: 0; transform: scale(.94) translateY(10px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* ══════════════ 画像标签 ══════════════ */
+        .profile-tag {
+            display: inline-flex; align-items: center; gap: 3px;
+            background: white; border: 1px solid var(--border);
+            border-radius: 6px; padding: 2px 7px; font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* ══════════════ 进度条 ══════════════ */
+        .progress-bar {
+            height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;
+        }
+        .progress-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+        /* ══════════════ 任务清单 ══════════════ */
+        .task-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border);
+            margin-bottom: 7px; transition: background .13s;
+        }
+        .task-item:hover { background: var(--bg-page); }
+        .task-checkbox {
+            width: 16px; height: 16px; border: 1.5px solid var(--border);
+            border-radius: 4px; margin-top: 2px; flex-shrink: 0; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .15s;
+        }
+        .task-checkbox.done { background: var(--accent); border-color: var(--accent); }
+
+        /* ══════════════ Toggle 开关 ══════════════ */
+        .toggle-switch {
+            width: 36px; height: 20px; border-radius: 10px;
+            background: #d1cfc9; position: relative; cursor: pointer;
+            transition: background .2s; flex-shrink: 0; border: none;
+        }
+        .toggle-switch.on { background: var(--accent); }
+        .toggle-switch::after {
+            content: ''; position: absolute;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: white; top: 3px; left: 3px;
+            transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15);
+        }
+        .toggle-switch.on::after { transform: translateX(16px); }
+
+        /* ══════════════ Toast ══════════════ */
+        #toast-container {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 200; display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            background: var(--text-primary); color: white;
+            padding: 9px 16px; border-radius: 10px; font-size: 13px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.18);
+            display: flex; align-items: center; gap: 8px;
+            animation: toast-in .22s ease;
+        }
+        .toast.success { background: var(--success); }
+        .toast.error   { background: var(--danger); }
+        @keyframes toast-in { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+        /* ══════════════ 思考动画 ══════════════ */
+        .thinking-dots { display: flex; gap: 5px; padding: 4px 0; }
+        .thinking-dots span {
+            width: 7px; height: 7px; background: var(--border);
+            border-radius: 50%; display: block;
+            animation: dot-bounce 1.1s infinite ease-in-out;
+        }
+        .thinking-dots span:nth-child(2) { animation-delay: .18s; }
+        .thinking-dots span:nth-child(3) { animation-delay: .36s; }
+        @keyframes dot-bounce {
+            0%,80%,100% { transform: scale(.7); opacity: .4; }
+            40% { transform: scale(1.15); opacity: 1; }
+        }
+
+        /* ══════════════ Markdown 渲染样式 ══════════════ */
+        .md-body { font-size: 14px; line-height: 1.75; color: var(--text-primary); }
+        .md-body p { margin-bottom: .6em; }
+        .md-body p:last-child { margin-bottom: 0; }
+        .md-body strong { font-weight: 600; }
+        .md-body em { font-style: italic; color: var(--text-secondary); }
+        .md-body h1,.md-body h2,.md-body h3 {
+            font-family: 'Lora', 'Noto Serif SC', serif;
+            margin: 1em 0 .4em; font-weight: 600;
+        }
+        .md-body h1 { font-size: 1.15em; }
+        .md-body h2 { font-size: 1.05em; }
+        .md-body h3 { font-size: .97em; }
+        .md-body ul,.md-body ol { padding-left: 1.4em; margin-bottom: .6em; }
+        .md-body li { margin-bottom: .25em; }
+        .md-body code {
+            background: #f3f0ff; color: #6b4cd8;
+            padding: 1px 6px; border-radius: 5px;
+            font-size: 13px; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        .md-body pre {
+            background: #1e1c2e; border-radius: 12px;
+            padding: 14px 16px; margin: .7em 0; overflow-x: auto;
+            border: 1px solid #2e2b45;
+        }
+        .md-body pre code {
+            background: none; color: #c9c1f5; padding: 0;
+            font-size: 12.5px; line-height: 1.65;
+        }
+        .md-body .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #161428; border-radius: 10px 10px 0 0;
+            padding: 7px 14px; font-size: 11px; color: #7b72a8;
+            margin-bottom: -12px;
+        }
+        .md-body .copy-code-btn {
+            background: none; border: none; color: #7b72a8; cursor: pointer;
+            font-size: 11px; padding: 2px 6px; border-radius: 4px; transition: color .15s;
+        }
+        .md-body .copy-code-btn:hover { color: #c9c1f5; }
+        .md-body blockquote {
+            border-left: 3px solid var(--accent-mid);
+            padding: 6px 12px; margin: .6em 0;
+            background: var(--accent-light); border-radius: 0 8px 8px 0;
+            color: var(--text-secondary);
+        }
+        .md-body table { border-collapse: collapse; width: 100%; margin: .7em 0; font-size: 13px; }
+        .md-body th,.md-body td { border: 1px solid var(--border); padding: 6px 10px; }
+        .md-body th { background: var(--bg-page); font-weight: 600; }
+        .md-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+        .md-body hr { border: none; border-top: 1px solid var(--border); margin: .8em 0; }
+
+        /* ══════════════ 工具提示 ══════════════ */
+        .tt { position: relative; }
+        .tt .tip {
+            display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+            transform: translateX(-50%); background: var(--text-primary); color: white;
+            font-size: 11px; padding: 3px 8px; border-radius: 5px;
+            white-space: nowrap; pointer-events: none; z-index: 50;
+        }
+        .tt:hover .tip { display: block; }
+
+        /* ══════════════ 徽章/标签 ══════════════ */
+        .badge-domain {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 8px;
+            background: var(--accent-light); color: var(--accent);
+            font-size: 12px; font-weight: 500; cursor: pointer;
+            border: 1px solid var(--accent-mid); transition: background .15s;
+            user-select: none;
+        }
+        .badge-domain:hover { background: #e5e1ff; }
+
+        .badge-model {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 8px;
+            background: var(--bg-page); color: var(--text-secondary);
+            font-size: 12px; font-weight: 500; cursor: pointer;
+            border: 1px solid var(--border); transition: background .15s;
+            user-select: none;
+        }
+        .badge-model:hover { background: var(--border); }
+
+        /* 路径时间线节点颜色更新 */
+        .node-active { background: var(--accent); box-shadow: 0 0 0 4px rgba(124,106,240,.15); }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+<!-- ═══════════════════════════════════════════
+     左侧边栏
+═══════════════════════════════════════════ -->
+<aside id="left-sidebar" class="flex flex-col h-screen shrink-0" style="overflow:hidden">
+
+    <!-- Logo + 折叠按钮 -->
+    <div class="flex items-center gap-2.5 px-4 py-3.5 shrink-0" style="border-bottom:1px solid var(--border)">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+             style="background:var(--accent)">
+            <i class="fa-solid fa-graduation-cap text-white" style="font-size:12px"></i>
+        </div>
+        <span style="font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap">Lumina</span>
+        <button id="toggle-left-btn" class="tt ml-auto shrink-0"
+            style="color:var(--text-muted);background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;transition:color .15s"
+            onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
+            <i class="fa-solid fa-sidebar-flip" style="font-size:14px"></i>
+            <span class="tip">折叠侧边栏</span>
+        </button>
+    </div>
+
+    <!-- 新建 + 搜索 -->
+    <div class="px-3 pt-3 pb-2 shrink-0 space-y-2">
+        <button id="new-chat-btn"
+            class="w-full flex items-center gap-2 justify-center py-2 rounded-xl text-sm font-medium transition"
+            style="background:var(--accent);color:white;border:none;cursor:pointer"
+            onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">
+            <i class="fa-solid fa-plus" style="font-size:12px"></i> 新建对话
+        </button>
+        <button id="search-btn"
+            class="w-full flex items-center gap-2 py-2 px-3 rounded-xl text-sm transition"
+            style="border:1px solid var(--border);background:none;cursor:pointer;color:var(--text-muted)"
+            onmouseover="this.style.background='rgba(0,0,0,.04)'" onmouseout="this.style.background='none'">
+            <i class="fa-solid fa-magnifying-glass" style="font-size:11px"></i> 搜索对话
+        </button>
+    </div>
+
+    <!-- 历史列表 -->
+    <div class="flex-1 overflow-y-auto px-2 pb-2">
+        <p class="px-2 py-2 mt-1" style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">最近</p>
+        <div id="history-list" class="space-y-px">
+            <div class="history-item active px-2 py-2" data-id="1">
+                <div class="flex items-center gap-2.5 pr-12">
+                    <i class="fa-brands fa-python shrink-0" style="color:var(--text-muted);font-size:13px;width:16px;text-align:center"></i>
+                    <span class="item-title text-sm truncate" style="color:var(--text-secondary)">Python 面向对象编程讨论</span>
+                </div>
+                <div class="item-actions">
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px" onclick="renameChat(1,event)"><i class="fa-solid fa-pen" style="font-size:10px"></i></button>
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px;color:var(--danger)" onclick="deleteChat(1,event)"><i class="fa-solid fa-trash" style="font-size:10px"></i></button>
+                </div>
+            </div>
+            <div class="history-item px-2 py-2" data-id="2">
+                <div class="flex items-center gap-2.5 pr-12">
+                    <i class="fa-solid fa-database shrink-0" style="color:var(--text-muted);font-size:13px;width:16px;text-align:center"></i>
+                    <span class="item-title text-sm truncate" style="color:var(--text-secondary)">MySQL 基础查询练习</span>
+                </div>
+                <div class="item-actions">
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px" onclick="renameChat(2,event)"><i class="fa-solid fa-pen" style="font-size:10px"></i></button>
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px;color:var(--danger)" onclick="deleteChat(2,event)"><i class="fa-solid fa-trash" style="font-size:10px"></i></button>
+                </div>
+            </div>
+            <div class="history-item px-2 py-2" data-id="3">
+                <div class="flex items-center gap-2.5 pr-12">
+                    <i class="fa-solid fa-code shrink-0" style="color:var(--text-muted);font-size:13px;width:16px;text-align:center"></i>
+                    <span class="item-title text-sm truncate" style="color:var(--text-secondary)">算法复杂度分析入门</span>
+                </div>
+                <div class="item-actions">
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px" onclick="renameChat(3,event)"><i class="fa-solid fa-pen" style="font-size:10px"></i></button>
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px;color:var(--danger)" onclick="deleteChat(3,event)"><i class="fa-solid fa-trash" style="font-size:10px"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <p class="px-2 py-2 mt-3" style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">更早</p>
+        <div class="space-y-px">
+            <div class="history-item px-2 py-2" data-id="10">
+                <div class="flex items-center gap-2.5 pr-12">
+                    <i class="fa-solid fa-network-wired shrink-0" style="color:var(--text-muted);font-size:13px;width:16px;text-align:center"></i>
+                    <span class="item-title text-sm truncate" style="color:var(--text-secondary)">计算机网络 OSI 模型</span>
+                </div>
+                <div class="item-actions">
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px" onclick="renameChat(10,event)"><i class="fa-solid fa-pen" style="font-size:10px"></i></button>
+                    <button class="tool-btn" style="width:24px;height:24px;border-radius:5px;color:var(--danger)" onclick="deleteChat(10,event)"><i class="fa-solid fa-trash" style="font-size:10px"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户区 -->
+    <div class="relative shrink-0">
+        <div id="user-dropdown">
+            <div class="dd-item" onclick="openSettings()">
+                <i class="fa-solid fa-gear" style="color:var(--text-muted);width:16px;text-align:center"></i> 设置
+            </div>
+            <div class="dd-item" onclick="openProfileModal()">
+                <i class="fa-solid fa-user-circle" style="color:var(--text-muted);width:16px;text-align:center"></i> 我的学习画像
+            </div>
+            <div class="dd-item" id="login-menu-item" onclick="goToLogin()">
+                <i class="fa-solid fa-right-to-bracket" style="color:var(--text-muted);width:16px;text-align:center"></i> 登录 / 注册
+            </div>
+            <div class="dd-item danger hidden" id="logout-menu-item" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket" style="width:16px;text-align:center"></i> 退出登录
+            </div>
+        </div>
+
+        <button id="user-btn" class="w-full flex items-center gap-3 px-3 py-3"
+            style="border:none;border-top:1px solid var(--border);background:none;cursor:pointer;transition:background .15s"
+            onmouseover="this.style.background='rgba(0,0,0,.03)'" onmouseout="this.style.background='none'">
+            <img id="user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=e8e4f0&color=7c6af0&size=64"
+                class="rounded-full shrink-0" style="width:32px;height:32px">
+            <div class="flex-1 text-left min-w-0">
+                <p id="user-name" class="text-sm font-medium truncate" style="color:var(--text-primary)">游客模式</p>
+                <p id="user-major" style="font-size:11px;color:var(--text-muted)" class="truncate">登录后同步学习记录</p>
+            </div>
+            <i class="fa-solid fa-ellipsis shrink-0" style="color:var(--text-muted);font-size:13px"></i>
+        </button>
+    </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════
+     中间主区域
+═══════════════════════════════════════════ -->
+<main class="flex-1 flex flex-col relative overflow-hidden" style="background:var(--bg-card)">
+
+    <!-- Header -->
+    <header class="h-14 flex items-center justify-between px-5 shrink-0 gap-3"
+        style="border-bottom:1px solid var(--border);background:rgba(250,249,247,.92);backdrop-filter:blur(10px);z-index:20">
+
+        <!-- 左 -->
+        <div class="flex items-center gap-3 min-w-0">
+            <button id="open-left-btn" class="tt hidden tool-btn" style="width:32px;height:32px">
+                <i class="fa-solid fa-bars" style="font-size:14px"></i>
+                <span class="tip">打开侧边栏</span>
+            </button>
+
+            <!-- 领域选择 -->
+            <div class="relative">
+                <div id="domain-trigger" class="badge-domain">
+                    <i class="fa-brands fa-python" style="font-size:11px"></i>
+                    <span id="current-domain">Python 方向知识库</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:9px;opacity:.6"></i>
+                </div>
+                <div id="domain-menu" class="header-dropdown" style="min-width:210px">
+                    <div class="hd-option active" data-domain="Python 方向知识库">
+                        <i class="fa-brands fa-python" style="color:#f5a623;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px">Python 方向知识库</div></div>
                     </div>
-                </div>`;
-                chatContainer.insertAdjacentHTML('beforeend', msgHTML);
-                scrollToBottom();
-            }
-
-            function appendAIMessage(text, id) {
-                const msgHTML = `
-                <div class="flex gap-4 max-w-4xl mx-auto mt-4">
-                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0 mt-1">
-                        <i class="fa-solid fa-robot text-sm"></i>
+                    <div class="hd-option" data-domain="数据库与 SQL">
+                        <i class="fa-solid fa-database" style="color:#4a90d9;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px">数据库与 SQL</div></div>
                     </div>
-                    <div class="flex-1">
-                        <p id="${id}" class="text-gray-800 leading-relaxed text-[15px]">${text}</p >
+                    <div class="hd-option" data-domain="算法与数据结构">
+                        <i class="fa-solid fa-code-branch" style="color:#4caf81;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px">算法与数据结构</div></div>
                     </div>
-                </div>`;
-                chatContainer.insertAdjacentHTML('beforeend', msgHTML);
-                scrollToBottom();
-            }
+                    <div class="hd-option" data-domain="计算机网络">
+                        <i class="fa-solid fa-network-wired" style="color:#9b6af0;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px">计算机网络</div></div>
+                    </div>
+                    <div class="hd-option" data-domain="操作系统">
+                        <i class="fa-solid fa-microchip" style="color:#e8a44a;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px">操作系统</div></div>
+                    </div>
+                    <hr style="margin:4px 0;border:none;border-top:1px solid var(--border)">
+                    <div class="hd-option" data-domain="通用对话">
+                        <i class="fa-solid fa-comments" style="color:var(--text-muted);width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px">通用对话</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            function scrollToBottom() {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
+        <!-- 中：标题 -->
+        <div class="flex-1 text-center min-w-0 hidden sm:block">
+            <span id="chat-title" class="text-sm font-medium truncate block" style="color:var(--text-secondary)">Python 面向对象编程讨论</span>
+        </div>
 
-            function escapeHtml(str) {
-                return str.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
-            }
+        <!-- 右 -->
+        <div class="flex items-center gap-1.5 shrink-0">
+            <!-- 模型 -->
+            <div class="relative">
+                <div id="model-badge" class="badge-model">
+                    <i class="fa-solid fa-robot" style="font-size:11px;color:var(--accent)"></i>
+                    <span id="current-model">多智能体协同</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:9px;opacity:.5"></i>
+                </div>
+                <div id="model-menu" class="header-dropdown right-align">
+                    <div class="hd-option active" data-model="多智能体协同">
+                        <i class="fa-solid fa-brain" style="color:var(--accent);width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px;font-weight:500">多智能体协同</div><div style="font-size:11px;color:var(--text-muted)">全功能，推荐</div></div>
+                    </div>
+                    <div class="hd-option" data-model="快速响应">
+                        <i class="fa-solid fa-bolt" style="color:#e8a44a;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px;font-weight:500">快速响应</div><div style="font-size:11px;color:var(--text-muted)">速度优先</div></div>
+                    </div>
+                    <div class="hd-option" data-model="深度分析">
+                        <i class="fa-solid fa-microscope" style="color:#4caf81;width:16px;text-align:center"></i>
+                        <div><div style="font-size:13px;font-weight:500">深度分析</div><div style="font-size:11px;color:var(--text-muted)">复杂问题推荐</div></div>
+                    </div>
+                </div>
+            </div>
 
-            sendBtn.addEventListener('click', handleSend);
-            textarea.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                }
-            });
+            <button class="tt tool-btn" style="width:32px;height:32px" onclick="shareChat()">
+                <i class="fa-solid fa-share-nodes" style="font-size:13px"></i>
+                <span class="tip">分享对话</span>
+            </button>
+
+            <button id="toggle-right-btn" class="tt tool-btn" style="width:32px;height:32px">
+                <i class="fa-solid fa-chart-pie" style="font-size:13px"></i>
+                <span class="tip">学习画像</span>
+            </button>
+
+            <div id="header-auth"></div>
+        </div>
+    </header>
+
+    <!-- 消息区 -->
+    <div id="chat-container" class="flex-1 overflow-y-auto pb-44">
+
+        <!-- 欢迎屏 -->
+        <div id="welcome-screen" class="max-w-xl mx-auto px-6 py-14">
+            <div class="text-center mb-10">
+                <div class="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                     style="background:var(--accent)">
+                    <i class="fa-solid fa-graduation-cap text-white" style="font-size:18px"></i>
+                </div>
+                <h2 style="font-family:'Lora',serif;font-size:22px;font-weight:600;color:var(--text-primary);margin-bottom:6px">
+                    你好，<span id="welcome-name">同学</span>
+                </h2>
+                <p style="font-size:13.5px;color:var(--text-secondary)">今天想探索什么？选一张卡片，或直接开始提问</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="prompt-card" onclick="usePrompt('帮我解释 Python 的继承与多态，用类比和代码举例说明')">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-brands fa-python" style="color:#f5a623"></i>
+                        <span style="font-size:11px;font-weight:600;color:var(--text-muted)">概念讲解</span>
+                    </div>
+                    <p style="font-size:13px;color:var(--text-primary)">解释 Python 继承与多态</p>
+                </div>
+                <div class="prompt-card" onclick="usePrompt('我想做一道关于 SQL 联表查询的练习题，请出一道中等难度的题目并给出表结构')">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-database" style="color:#4a90d9"></i>
+                        <span style="font-size:11px;font-weight:600;color:var(--text-muted)">练习出题</span>
+                    </div>
+                    <p style="font-size:13px;color:var(--text-primary)">出一道 SQL 联表查询练习题</p>
+                </div>
+                <div class="prompt-card" onclick="usePrompt('请给我制定一个一个月内掌握 Python 数据分析的学习计划，按每天 1 小时规划')">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-road" style="color:#4caf81"></i>
+                        <span style="font-size:11px;font-weight:600;color:var(--text-muted)">路径规划</span>
+                    </div>
+                    <p style="font-size:13px;color:var(--text-primary)">制定 Python 数据分析学习计划</p>
+                </div>
+                <div class="prompt-card" onclick="usePrompt('帮我检查并解释以下代码的错误：\n\ndef add(a, b)\n    return a + b')">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-bug" style="color:var(--danger)"></i>
+                        <span style="font-size:11px;font-weight:600;color:var(--text-muted)">代码调试</span>
+                    </div>
+                    <p style="font-size:13px;color:var(--text-primary)">检查并解释代码错误</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 消息渲染区 -->
+        <div id="messages-area" class="hidden space-y-2 px-5 pt-6 max-w-3xl mx-auto w-full"></div>
+    </div>
+
+    <!-- 输入框 -->
+    <div class="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-6"
+        style="background:linear-gradient(to top,var(--bg-card) 70%,transparent);z-index:10">
+        <div class="max-w-3xl mx-auto">
+            <div id="file-preview-area"></div>
+            <div id="input-card">
+                <textarea id="chat-input" rows="1"
+                    class="w-full py-3.5 px-4 text-sm leading-relaxed"
+                    placeholder="输入你想学习的内容，Shift+Enter 换行，Enter 发送…"></textarea>
+                <div class="flex items-center justify-between px-3 pb-2.5">
+                    <div class="flex items-center gap-0.5">
+                        <label class="tt tool-btn" style="cursor:pointer">
+                            <i class="fa-solid fa-paperclip" style="font-size:13px"></i>
+                            <span class="tip">上传文件</span>
+                            <input type="file" id="file-input" class="hidden" multiple accept=".py,.js,.java,.c,.cpp,.txt,.pdf,.md,.png,.jpg">
+                        </label>
+                        <button class="tt tool-btn" onclick="showToast('截图功能开发中','info')">
+                            <i class="fa-solid fa-camera" style="font-size:13px"></i>
+                            <span class="tip">上传截图</span>
+                        </button>
+                        <button class="tt tool-btn" onclick="showToast('已引用知识库：'+document.getElementById('current-domain').textContent,'success')">
+                            <i class="fa-solid fa-book-bookmark" style="font-size:13px"></i>
+                            <span class="tip">引用知识库</span>
+                        </button>
+                        <button id="voice-btn" class="tt tool-btn" onclick="toggleVoice()">
+                            <i class="fa-solid fa-microphone" style="font-size:13px"></i>
+                            <span class="tip">语音输入</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="char-count" class="hidden" style="font-size:11px;color:var(--text-muted)"></span>
+                        <button id="stop-btn" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition"
+                            style="border:1px solid var(--border);color:var(--text-secondary);background:none;cursor:pointer">
+                            <i class="fa-solid fa-stop"></i> 停止
+                        </button>
+                        <button id="send-btn">
+                            <i class="fa-solid fa-arrow-up" style="font-size:13px"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center mt-2" style="font-size:11px;color:var(--text-muted)">内容由多智能体大模型生成，仅供参考，请注意甄别。</p>
+        </div>
+    </div>
+</main>
+
+<!-- ═══════════════════════════════════════════
+     右侧侧边栏
+═══════════════════════════════════════════ -->
+<aside id="right-sidebar" class="flex flex-col h-screen shrink-0" style="overflow:hidden">
+    <div class="px-4 py-3.5 flex items-center justify-between shrink-0" style="border-bottom:1px solid var(--border)">
+        <div>
+            <h2 class="text-sm font-bold flex items-center gap-2" style="color:var(--text-primary)">
+                <i class="fa-solid fa-chart-pie" style="color:var(--accent)"></i> 动态学习画像
+            </h2>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:2px">随对话实时更新</p>
+        </div>
+        <button id="close-right-btn" class="tool-btn" style="width:28px;height:28px">
+            <i class="fa-solid fa-xmark" style="font-size:13px"></i>
+        </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4" style="display:flex;flex-direction:column;gap:18px">
+
+        <!-- 画像维度 -->
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <h3 style="font-size:12px;font-weight:600;color:var(--text-secondary)">画像维度</h3>
+                <button style="font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer" onclick="showToast('画像更新中…','info')">更新</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <span class="profile-tag"><span style="font-weight:600;color:var(--accent);font-size:10px">基础</span> C语言, 逻辑清晰</span>
+                <span class="profile-tag"><span style="font-weight:600;color:#4caf81;font-size:10px">风格</span> 对比学习</span>
+                <span class="profile-tag"><span style="font-weight:600;color:var(--danger);font-size:10px">短板</span> OOP, 多态</span>
+                <span class="profile-tag"><span style="font-weight:600;color:#9b6af0;font-size:10px">进度</span> Python 进阶</span>
+                <span class="profile-tag"><span style="font-weight:600;color:#e8a44a;font-size:10px">目标</span> 数据分析</span>
+                <span class="profile-tag"><span style="font-weight:600;color:#4a90d9;font-size:10px">活跃</span> 晚间</span>
+            </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border)">
+
+        <!-- 本周进度 -->
+        <div>
+            <h3 style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:10px">本周学习进度</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px"><span>Python OOP</span><span>68%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:68%;background:var(--accent)"></div></div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px"><span>SQL 基础</span><span>45%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:45%;background:#4caf81"></div></div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px"><span>算法基础</span><span>22%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:22%;background:#e8a44a"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border)">
+
+        <!-- 学习路径 -->
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <h3 style="font-size:12px;font-weight:600;color:var(--text-secondary)">个性化学习路径</h3>
+                <button style="font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer" onclick="openReplanModal()">重新规划</button>
+            </div>
+            <div style="position:relative;border-left:1.5px solid var(--border);margin-left:8px;display:flex;flex-direction:column;gap:14px">
+                <div style="padding-left:14px;position:relative">
+                    <div style="position:absolute;width:10px;height:10px;background:#4caf81;border-radius:50%;left:-5.5px;top:4px;display:flex;align-items:center;justify-content:center">
+                        <i class="fa-solid fa-check" style="color:white;font-size:5px"></i>
+                    </div>
+                    <p style="font-size:12px;font-weight:600;color:var(--text-muted)">1. Python 基础语法</p>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:2px">已掌握变量、循环、函数</p>
+                </div>
+                <div style="padding-left:14px;position:relative">
+                    <div class="node-active" style="position:absolute;width:10px;height:10px;border-radius:50%;left:-5.5px;top:4px;animation:pulse 2s infinite"></div>
+                    <p style="font-size:12px;font-weight:600;color:var(--accent)">2. 攻克 OOP 面向对象</p>
+                    <p style="font-size:11px;color:var(--text-secondary);margin-top:2px">正在学习继承与多态…</p>
+                    <button onclick="openTasksModal()" style="margin-top:6px;font-size:10px;background:var(--accent-light);color:var(--accent);border:none;cursor:pointer;padding:3px 8px;border-radius:6px;transition:background .15s"
+                        onmouseover="this.style.background='#e5e1ff'" onmouseout="this.style.background='var(--accent-light)'">查看专项任务 →</button>
+                </div>
+                <div style="padding-left:14px;position:relative">
+                    <div style="position:absolute;width:10px;height:10px;background:var(--border);border-radius:50%;left:-5.5px;top:4px"></div>
+                    <p style="font-size:12px;font-weight:600;color:var(--text-muted)">3. 异常处理与文件 IO</p>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:2px">待解锁</p>
+                </div>
+                <div style="padding-left:14px;position:relative">
+                    <div style="position:absolute;width:10px;height:10px;background:var(--border);border-radius:50%;left:-5.5px;top:4px"></div>
+                    <p style="font-size:12px;font-weight:600;color:var(--text-muted)">4. NumPy & Pandas</p>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:2px">待解锁</p>
+                </div>
+            </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border)">
+
+        <!-- 今日统计 -->
+        <div>
+            <h3 style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:10px">今日学习</h3>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+                <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px 6px">
+                    <p style="font-size:18px;font-weight:700;color:var(--accent)">12</p>
+                    <p style="font-size:10px;color:var(--text-muted)">对话轮次</p>
+                </div>
+                <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px 6px">
+                    <p style="font-size:18px;font-weight:700;color:#4caf81">45</p>
+                    <p style="font-size:10px;color:var(--text-muted)">分钟</p>
+                </div>
+                <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px 6px">
+                    <p style="font-size:18px;font-weight:700;color:#e8a44a">3</p>
+                    <p style="font-size:10px;color:var(--text-muted)">知识点</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+
+<!-- ═══════════════════════════════════════════
+     模态框
+═══════════════════════════════════════════ -->
+
+<!-- 搜索 -->
+<div id="search-modal" class="modal-backdrop" onclick="closeModal('search-modal')">
+    <div class="modal-card p-6" onclick="event.stopPropagation()">
+        <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--text-primary)">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--accent)"></i> 搜索对话历史
+        </h3>
+        <input type="text" id="search-input" placeholder="输入关键词…"
+            style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13.5px;outline:none;transition:border-color .2s;font-family:inherit;color:var(--text-primary);margin-bottom:14px"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <div id="search-results" class="overflow-y-auto" style="max-height:220px">
+            <p style="font-size:13px;color:var(--text-muted);text-align:center;padding:24px 0">输入关键词开始搜索</p>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+            <button onclick="closeModal('search-modal')"
+                style="padding:7px 16px;border-radius:9px;font-size:13px;color:var(--text-secondary);background:var(--bg-page);border:1px solid var(--border);cursor:pointer">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 专项任务 -->
+<div id="tasks-modal" class="modal-backdrop" onclick="closeModal('tasks-modal')">
+    <div class="modal-card p-6" onclick="event.stopPropagation()">
+        <h3 class="text-base font-bold mb-1 flex items-center gap-2" style="color:var(--text-primary)">
+            <i class="fa-solid fa-list-check" style="color:var(--accent)"></i> OOP 专项任务清单
+        </h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">完成任务以解锁下一阶段学习</p>
+        <div id="task-list"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+            <button onclick="closeModal('tasks-modal')"
+                style="padding:7px 16px;border-radius:9px;font-size:13px;color:var(--text-secondary);background:var(--bg-page);border:1px solid var(--border);cursor:pointer">关闭</button>
+            <button onclick="usePrompt('我想练习：'+getNextTask());closeModal('tasks-modal')"
+                style="padding:7px 16px;border-radius:9px;font-size:13px;color:white;background:var(--accent);border:none;cursor:pointer">开始练习</button>
+        </div>
+    </div>
+</div>
+
+<!-- 重新规划 -->
+<div id="replan-modal" class="modal-backdrop" onclick="closeModal('replan-modal')">
+    <div class="modal-card p-6" onclick="event.stopPropagation()">
+        <h3 class="text-base font-bold mb-1 flex items-center gap-2" style="color:var(--text-primary)">
+            <i class="fa-solid fa-map" style="color:var(--accent)"></i> 重新规划学习路径
+        </h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">告诉我你的新目标，AI 将为你生成专属路径</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <div>
+                <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:5px">学习目标</label>
+                <input type="text" id="replan-goal" placeholder="例如：一个月内掌握 Django 开发"
+                    style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13.5px;outline:none;font-family:inherit;color:var(--text-primary)"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div>
+                <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:5px">每天可投入时间</label>
+                <select style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13.5px;outline:none;background:white;font-family:inherit;color:var(--text-primary)"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                    <option>30 分钟以内</option>
+                    <option selected>1 - 2 小时</option>
+                    <option>2 - 4 小时</option>
+                    <option>4 小时以上</option>
+                </select>
+            </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+            <button onclick="closeModal('replan-modal')"
+                style="padding:8px 18px;border-radius:10px;font-size:13px;color:var(--text-secondary);background:var(--bg-page);border:1px solid var(--border);cursor:pointer">取消</button>
+            <button onclick="doReplan()"
+                style="padding:8px 18px;border-radius:10px;font-size:13px;color:white;background:var(--accent);border:none;cursor:pointer">
+                <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:5px"></i>生成新路径
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 设置 -->
+<div id="settings-modal" class="modal-backdrop" onclick="closeModal('settings-modal')">
+    <div class="modal-card p-6" style="max-width:380px" onclick="event.stopPropagation()">
+        <h3 class="text-base font-bold mb-5 flex items-center gap-2" style="color:var(--text-primary)">
+            <i class="fa-solid fa-gear" style="color:var(--accent)"></i> 设置
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <p style="font-size:13.5px;font-weight:500;color:var(--text-primary)">流式输出</p>
+                    <p style="font-size:11.5px;color:var(--text-muted)">实时逐字显示 AI 回复</p>
+                </div>
+                <button class="toggle-switch on" id="toggle-stream" onclick="toggleSetting('stream')"></button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <p style="font-size:13.5px;font-weight:500;color:var(--text-primary)">自动生成对话标题</p>
+                    <p style="font-size:11.5px;color:var(--text-muted)">根据内容自动命名对话</p>
+                </div>
+                <button class="toggle-switch on" id="toggle-autotitle" onclick="toggleSetting('autotitle')"></button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <p style="font-size:13.5px;font-weight:500;color:var(--text-primary)">Enter 直接发送</p>
+                    <p style="font-size:11.5px;color:var(--text-muted)">关闭后需 Shift+Enter 换行</p>
+                </div>
+                <button class="toggle-switch on" id="toggle-enter" onclick="toggleSetting('enter')"></button>
+            </div>
+        </div>
+        <hr style="margin:18px 0;border:none;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <button onclick="clearHistory()" style="font-size:12px;color:var(--danger);background:none;border:none;cursor:pointer">清空所有对话历史</button>
+            <button onclick="closeModal('settings-modal')"
+                style="padding:8px 20px;border-radius:10px;font-size:13px;color:white;background:var(--accent);border:none;cursor:pointer">完成</button>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认 -->
+<div id="delete-modal" class="modal-backdrop" onclick="closeModal('delete-modal')">
+    <div class="modal-card p-6" style="max-width:340px" onclick="event.stopPropagation()">
+        <div style="width:40px;height:40px;background:#fdf0f0;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+            <i class="fa-solid fa-trash" style="color:var(--danger)"></i>
+        </div>
+        <p style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">删除对话？</p>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">此操作不可撤销，对话记录将永久删除。</p>
+        <div style="display:flex;gap:10px">
+            <button onclick="closeModal('delete-modal')"
+                style="flex:1;padding:9px;border-radius:10px;font-size:13px;color:var(--text-secondary);background:var(--bg-page);border:1px solid var(--border);cursor:pointer">取消</button>
+            <button id="confirm-delete-btn"
+                style="flex:1;padding:9px;border-radius:10px;font-size:13px;color:white;background:var(--danger);border:none;cursor:pointer">确认删除</button>
+        </div>
+    </div>
+</div>
+
+<!-- 分享 -->
+<div id="share-modal" class="modal-backdrop" onclick="closeModal('share-modal')">
+    <div class="modal-card p-6" style="max-width:360px" onclick="event.stopPropagation()">
+        <h3 class="text-base font-bold mb-1 flex items-center gap-2" style="color:var(--text-primary)">
+            <i class="fa-solid fa-share-nodes" style="color:var(--accent)"></i> 分享对话
+        </h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">生成链接，分享给同学一起学习</p>
+        <div style="display:flex;gap:8px">
+            <input type="text" value="https://lumina-study.ai/share/abc123" readonly
+                style="flex:1;border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;font-size:12px;color:var(--text-secondary);background:var(--bg-page);outline:none">
+            <button onclick="copyShareLink()"
+                style="padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:9px;cursor:pointer;font-size:12px">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+            <button onclick="closeModal('share-modal')"
+                style="padding:7px 16px;border-radius:9px;font-size:13px;color:var(--text-secondary);background:var(--bg-page);border:1px solid var(--border);cursor:pointer">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 容器 -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════
+     JavaScript
+═══════════════════════════════════════════ -->
+<script>
+const API_BASE = 'http://127.0.0.1:5000';
+
+const OOP_TASKS = [
+    { id:1, text:'理解类与实例：创建一个 Animal 类', done:true },
+    { id:2, text:'掌握继承：让 Dog 继承 Animal', done:true },
+    { id:3, text:'理解多态：用 speak() 方法演示多态', done:false },
+    { id:4, text:'实战练习：设计一个图形类层次结构', done:false },
+    { id:5, text:'进阶：理解 super() 与 MRO', done:false },
+];
+
+const HISTORY_DATA = [
+    { id:1, title:'Python 面向对象编程讨论', icon:'fa-brands fa-python' },
+    { id:2, title:'MySQL 基础查询练习', icon:'fa-solid fa-database' },
+    { id:3, title:'算法复杂度分析入门', icon:'fa-solid fa-code' },
+    { id:10, title:'计算机网络 OSI 模型', icon:'fa-solid fa-network-wired' },
+];
+
+const settings = { stream:true, autotitle:true, enter:true };
+let messages = [], isGenerating = false, pendingDeleteId = null, abortController = null;
+
+// ── 初始化 ──
+document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
+    initInputBox();
+    initSidebars();
+    initDropdownMenus();
+    initFileUpload();
+    initSearch();
+    renderTaskList();
+});
+
+// ── 认证 ──
+function initAuth() {
+    const token = localStorage.getItem('auth_token');
+    const userInfoStr = localStorage.getItem('user_info');
+    const isLoggedIn = !!(token && userInfoStr);
+    let userInfo = null;
+    if (isLoggedIn) { try { userInfo = JSON.parse(userInfoStr); } catch(e){} }
+
+    const majorMap = { cs:'计算机科学与技术', ee:'电子信息工程', se:'软件工程', is:'信息安全', ai:'人工智能', other:'其他' };
+    const nameEl = document.getElementById('user-name');
+    const majorEl = document.getElementById('user-major');
+    const avatarEl = document.getElementById('user-avatar');
+
+    if (isLoggedIn && userInfo) {
+        const name = userInfo.name || '同学';
+        nameEl.textContent = name;
+        majorEl.textContent = majorMap[userInfo.major] || userInfo.major || '计算机科学与技术';
+        avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e8e4f0&color=7c6af0&size=64`;
+        document.getElementById('login-menu-item').classList.add('hidden');
+        document.getElementById('logout-menu-item').classList.remove('hidden');
+        document.getElementById('welcome-name').textContent = name;
+    } else {
+        document.getElementById('logout-menu-item').classList.add('hidden');
+    }
+
+    const headerAuth = document.getElementById('header-auth');
+    if (isLoggedIn) {
+        headerAuth.innerHTML = `<button onclick="logout()" class="tool-btn" style="font-size:12px;width:auto;padding:0 10px;height:30px;gap:5px;display:flex;align-items:center;color:var(--text-secondary);border:1px solid var(--border);border-radius:8px"><i class="fa-solid fa-right-from-bracket" style="font-size:11px"></i>退出</button>`;
+    } else {
+        headerAuth.innerHTML = `<button onclick="goToLogin()" style="padding:5px 12px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px"><i class="fa-solid fa-right-to-bracket" style="font-size:11px"></i>登录</button>`;
+    }
+}
+
+function goToLogin() {
+    const p = window.location.pathname;
+    window.location.href = p.includes('.html') ? p.replace('index.html','login.html') : '/login';
+}
+
+function logout() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_info');
+    showToast('已退出登录','success');
+    setTimeout(initAuth, 300);
+    document.getElementById('user-dropdown').classList.remove('open');
+}
+
+// ── 侧边栏 & 下拉 ──
+function initSidebars() {
+    document.getElementById('toggle-left-btn').addEventListener('click', () => {
+        document.getElementById('left-sidebar').classList.add('collapsed');
+        document.getElementById('open-left-btn').classList.remove('hidden');
+    });
+    document.getElementById('open-left-btn').addEventListener('click', () => {
+        document.getElementById('left-sidebar').classList.remove('collapsed');
+        document.getElementById('open-left-btn').classList.add('hidden');
+    });
+    document.getElementById('toggle-right-btn').addEventListener('click', () => {
+        document.getElementById('right-sidebar').classList.toggle('collapsed');
+    });
+    document.getElementById('close-right-btn').addEventListener('click', () => {
+        document.getElementById('right-sidebar').classList.add('collapsed');
+    });
+    document.getElementById('user-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        document.getElementById('user-dropdown').classList.toggle('open');
+    });
+    document.addEventListener('click', () => document.getElementById('user-dropdown').classList.remove('open'));
+}
+
+function initDropdownMenus() {
+    // 领域
+    const domainTrigger = document.getElementById('domain-trigger');
+    const domainMenu = document.getElementById('domain-menu');
+    domainTrigger.addEventListener('click', e => {
+        e.stopPropagation();
+        domainMenu.classList.toggle('open');
+        document.getElementById('model-menu').classList.remove('open');
+    });
+    domainMenu.querySelectorAll('.hd-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            domainMenu.querySelectorAll('.hd-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            document.getElementById('current-domain').textContent = opt.dataset.domain;
+            domainMenu.classList.remove('open');
+            showToast('已切换至：' + opt.dataset.domain, 'success');
         });
-    </script>
+    });
+
+    // 模型
+    const modelBadge = document.getElementById('model-badge');
+    const modelMenu = document.getElementById('model-menu');
+    modelBadge.addEventListener('click', e => {
+        e.stopPropagation();
+        modelMenu.classList.toggle('open');
+        domainMenu.classList.remove('open');
+    });
+    modelMenu.querySelectorAll('.hd-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            modelMenu.querySelectorAll('.hd-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            document.getElementById('current-model').textContent = opt.dataset.model;
+            modelMenu.classList.remove('open');
+            showToast('模型：' + opt.dataset.model, 'success');
+        });
+    });
+
+    document.addEventListener('click', () => {
+        domainMenu.classList.remove('open');
+        modelMenu.classList.remove('open');
+    });
+
+    // 历史记录点击
+    document.addEventListener('click', e => {
+        const item = e.target.closest('.history-item');
+        if (!item || e.target.closest('.item-actions')) return;
+        document.querySelectorAll('.history-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        const title = item.querySelector('.item-title')?.textContent || '对话';
+        document.getElementById('chat-title').textContent = title;
+    });
+
+    // 新建对话
+    document.getElementById('new-chat-btn').addEventListener('click', () => {
+        document.getElementById('welcome-screen').classList.remove('hidden');
+        document.getElementById('messages-area').classList.add('hidden');
+        document.getElementById('messages-area').innerHTML = '';
+        messages = [];
+        document.getElementById('chat-title').textContent = '新对话';
+        showToast('新对话已创建','success');
+    });
+}
+
+// ── 输入框 ──
+function initInputBox() {
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const charCount = document.getElementById('char-count');
+
+    input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+        const len = input.value.length;
+        charCount.textContent = len + ' 字';
+        charCount.classList.toggle('hidden', len <= 150);
+    });
+
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey && settings.enter) { e.preventDefault(); handleSend(); }
+    });
+
+    sendBtn.addEventListener('click', handleSend);
+    stopBtn.addEventListener('click', () => {
+        if (abortController) abortController.abort();
+        setGenerating(false);
+        showToast('已停止生成','info');
+    });
+}
+
+function setGenerating(val) {
+    isGenerating = val;
+    const s = document.getElementById('send-btn');
+    const t = document.getElementById('stop-btn');
+    if (val) { s.classList.add('hidden'); t.classList.remove('hidden'); t.classList.add('flex'); }
+    else     { s.classList.remove('hidden'); t.classList.add('hidden'); t.classList.remove('flex'); }
+}
+
+// ── 发送 ──
+async function handleSend() {
+    if (isGenerating) return;
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    document.getElementById('welcome-screen').classList.add('hidden');
+    document.getElementById('messages-area').classList.remove('hidden');
+
+    const files = [...document.getElementById('file-preview-area').querySelectorAll('.file-chip')].map(c => c.dataset.filename);
+    appendUserMessage(text, files);
+    input.value = ''; input.style.height = 'auto';
+    clearFilePreview();
+
+    const user = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const loadingId = 'ai-' + Date.now();
+    appendAIThinking(loadingId);
+    setGenerating(true);
+    abortController = new AbortController();
+
+    try {
+        const res = await fetch(`${API_BASE}/api/chat`, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+(localStorage.getItem('auth_token')||'') },
+            body: JSON.stringify({ user_id: user.student_id||user.id||'guest', message:text,
+                model:document.getElementById('current-model').textContent,
+                domain:document.getElementById('current-domain').textContent }),
+            signal: abortController.signal
+        });
+        const data = await res.json();
+        const answer = data?.choices?.[0]?.message?.content || data?.answer || data?.message || '后端返回格式异常';
+        const el = document.getElementById(loadingId);
+        if (el) { el.className = 'md-body'; el.innerHTML = renderMarkdown(answer); }
+        if (settings.autotitle && messages.length === 1) {
+            document.getElementById('chat-title').textContent = text.slice(0,22) + (text.length>22?'…':'');
+        }
+    } catch(err) {
+        if (err.name === 'AbortError') return;
+        const el = document.getElementById(loadingId);
+        if (el) el.innerHTML = `<span style="color:var(--danger);font-size:13px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px"></i>连接后端失败，请确认服务已启动（${API_BASE}）</span>`;
+    } finally { setGenerating(false); scrollToBottom(); }
+}
+
+// ── 消息渲染 ──
+function appendUserMessage(text, files = []) {
+    const avatarSrc = document.getElementById('user-avatar').src;
+    const msgId = 'msg-' + Date.now();
+    const fileHtml = files.length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">`+
+        files.map(f=>`<span class="file-chip" style="font-size:11px"><i class="fa-solid fa-file-code" style="margin-right:4px"></i>${f}</span>`).join('')+'</div>' : '';
+    const html = `
+    <div class="msg-wrap msg-user" id="${msgId}" style="display:flex;flex-direction:column;align-items:flex-end;margin-bottom:16px">
+        <div style="display:flex;align-items:flex-start;gap:10px;flex-direction:row-reverse;max-width:72%">
+            <img src="${avatarSrc}" style="width:30px;height:30px;border-radius:50%;flex-shrink:0;margin-top:2px">
+            <div class="bubble" style="padding:10px 14px">
+                ${fileHtml}
+                <p style="font-size:14px;color:var(--text-primary);line-height:1.7;white-space:pre-wrap">${escapeHtml(text)}</p>
+            </div>
+        </div>
+        <div class="msg-actions" style="display:none;gap:4px;margin-top:5px;margin-right:40px">
+            <button class="msg-action-btn" onclick="copyMsgText('${escapeJs(text)}')"><i class="fa-regular fa-copy" style="margin-right:3px"></i>复制</button>
+            <button class="msg-action-btn" onclick="editMsg('${msgId}','${escapeJs(text)}')"><i class="fa-solid fa-pen" style="margin-right:3px"></i>编辑</button>
+        </div>
+    </div>`;
+    document.getElementById('messages-area').insertAdjacentHTML('beforeend', html);
+    messages.push({ role:'user', content:text });
+    scrollToBottom();
+}
+
+function appendAIThinking(id) {
+    const html = `
+    <div class="msg-wrap msg-ai" style="display:flex;flex-direction:column;align-items:flex-start;margin-bottom:16px">
+        <div style="display:flex;align-items:flex-start;gap:10px;max-width:82%">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+                <i class="fa-solid fa-robot" style="color:white;font-size:12px"></i>
+            </div>
+            <div class="bubble" style="padding:12px 16px;min-width:60px">
+                <div id="${id}" class="thinking-dots"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+    </div>`;
+    document.getElementById('messages-area').insertAdjacentHTML('beforeend', html);
+    scrollToBottom();
+}
+
+// ── Markdown 渲染 ──
+function renderMarkdown(text) {
+    // 代码块 (带语言标记 + 复制按钮)
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const escaped = escapeHtml(code.trim());
+        const safeLang = escapeHtml(lang || 'code');
+        const safeCode = escapeJs(code.trim());
+        return `<div class="code-header"><span>${safeLang}</span><button class="copy-code-btn" onclick="navigator.clipboard.writeText('${safeCode}').then(()=>showToast('代码已复制','success'))"><i class="fa-regular fa-copy"></i> 复制</button></div><pre><code>${escaped}</code></pre>`;
+    });
+    // 行内代码
+    text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    // 标题
+    text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    text = text.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    // 粗体、斜体
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // 引用
+    text = text.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // 分割线
+    text = text.replace(/^---+$/gm, '<hr>');
+    // 有序列表
+    text = text.replace(/((?:^\d+\. .+\n?)+)/gm, (block) => {
+        const items = block.trim().split('\n').map(l => `<li>${l.replace(/^\d+\. /,'')}</li>`).join('');
+        return `<ol>${items}</ol>`;
+    });
+    // 无序列表
+    text = text.replace(/((?:^[-*] .+\n?)+)/gm, (block) => {
+        const items = block.trim().split('\n').map(l => `<li>${l.replace(/^[-*] /,'')}</li>`).join('');
+        return `<ul>${items}</ul>`;
+    });
+    // 链接
+    text = text.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // 换行 → <p>
+    const lines = text.split('\n');
+    const result = [];
+    for (const line of lines) {
+        const t = line.trim();
+        if (!t) { result.push(''); continue; }
+        if (/^<(h[1-3]|ul|ol|pre|blockquote|hr|div)/.test(t)) { result.push(t); }
+        else { result.push(`<p>${t}</p>`); }
+    }
+    return result.join('\n');
+}
+
+function scrollToBottom() { const c = document.getElementById('chat-container'); c.scrollTop = c.scrollHeight; }
+
+// ── 消息操作 ──
+function copyMsgText(text) { navigator.clipboard.writeText(text).then(()=>showToast('已复制到剪贴板','success')); }
+function editMsg(msgId, text) {
+    const input = document.getElementById('chat-input');
+    input.value = text; input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,160)+'px'; input.focus();
+    const el = document.getElementById(msgId);
+    if (el) { let next=el.nextElementSibling; while(next){const t=next.nextElementSibling;next.remove();next=t;} el.remove(); }
+}
+
+// ── 文件上传 ──
+function initFileUpload() {
+    document.getElementById('file-input').addEventListener('change', e => {
+        const area = document.getElementById('file-preview-area');
+        [...e.target.files].forEach(f => {
+            if (area.querySelector(`[data-filename="${f.name}"]`)) return;
+            const chip = document.createElement('div');
+            chip.className='file-chip'; chip.dataset.filename=f.name;
+            chip.innerHTML=`<i class="fa-solid fa-file-code" style="flex-shrink:0"></i><span style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span><button onclick="this.parentNode.remove();if(!document.getElementById('file-preview-area').children.length)document.getElementById('file-preview-area').classList.remove('has-files')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:10px;padding:2px 2px 2px 4px">✕</button>`;
+            area.appendChild(chip);
+        });
+        area.classList.add('has-files');
+        e.target.value='';
+    });
+}
+function clearFilePreview() { const a=document.getElementById('file-preview-area'); a.innerHTML=''; a.classList.remove('has-files'); }
+
+// ── 快捷提示 ──
+function usePrompt(text) {
+    const input = document.getElementById('chat-input');
+    input.value = text; input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,160)+'px'; input.focus();
+    setTimeout(handleSend, 80);
+}
+
+// ── 搜索 ──
+function initSearch() {
+    document.getElementById('search-btn').addEventListener('click', () => openModal('search-modal'));
+    document.getElementById('search-input').addEventListener('input', e => {
+        const q = e.target.value.trim().toLowerCase();
+        const r = document.getElementById('search-results');
+        if (!q) { r.innerHTML='<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:24px 0">输入关键词开始搜索</p>'; return; }
+        const m = HISTORY_DATA.filter(h => h.title.toLowerCase().includes(q));
+        r.innerHTML = m.length
+            ? m.map(h=>`<div onclick="closeModal('search-modal');document.getElementById('chat-title').textContent='${escapeJs(h.title)}'" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .13s" onmouseover="this.style.background='var(--bg-page)'" onmouseout="this.style.background='none'"><i class="${h.icon}" style="color:var(--text-muted);width:16px;text-align:center"></i><span style="font-size:13px;color:var(--text-primary)">${h.title}</span></div>`).join('')
+            : '<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:24px 0">没有找到相关对话</p>';
+    });
+}
+
+// ── 任务 ──
+function renderTaskList() {
+    document.getElementById('task-list').innerHTML = OOP_TASKS.map(t => `
+    <div class="task-item">
+        <div class="task-checkbox ${t.done?'done':''}" onclick="toggleTask(${t.id})">
+            ${t.done?'<i class="fa-solid fa-check" style="color:white;font-size:7px"></i>':''}
+        </div>
+        <p style="font-size:13px;color:${t.done?'var(--text-muted)':'var(--text-primary)'};${t.done?'text-decoration:line-through':''}">${t.text}</p>
+    </div>`).join('');
+}
+function toggleTask(id) {
+    const t = OOP_TASKS.find(x=>x.id===id); if(!t) return;
+    t.done=!t.done; renderTaskList();
+    showToast(`进度：${OOP_TASKS.filter(x=>x.done).length}/${OOP_TASKS.length} 已完成`,'success');
+}
+function getNextTask() { const t=OOP_TASKS.find(x=>!x.done); return t?t.text:'OOP 综合项目'; }
+
+// ── 历史操作 ──
+function renameChat(id, e) {
+    e.stopPropagation();
+    const item = document.querySelector(`[data-id="${id}"]`);
+    const span = item.querySelector('.item-title');
+    const old = span.textContent;
+    const input = document.createElement('input');
+    Object.assign(input.style, { fontSize:'13px', border:'1.5px solid var(--accent)', borderRadius:'5px', padding:'1px 6px', width:'100%', outline:'none', fontFamily:'inherit', color:'var(--text-primary)' });
+    input.value = old; span.replaceWith(input); input.focus(); input.select();
+    const finish = () => { const v=input.value.trim()||old; const s=document.createElement('span'); s.className='item-title text-sm truncate'; s.style.cssText='color:var(--text-secondary)'; s.textContent=v; input.replaceWith(s); if(v!==old)showToast('已重命名','success'); };
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', e => { if(e.key==='Enter')input.blur(); if(e.key==='Escape'){input.value=old;input.blur();} });
+}
+
+function deleteChat(id, e) {
+    e.stopPropagation(); pendingDeleteId=id; openModal('delete-modal');
+    document.getElementById('confirm-delete-btn').onclick = () => {
+        document.querySelector(`[data-id="${pendingDeleteId}"]`)?.remove();
+        closeModal('delete-modal'); showToast('对话已删除','success');
+    };
+}
+
+// ── 重新规划 ──
+function doReplan() {
+    const goal = document.getElementById('replan-goal').value.trim();
+    if (!goal) { showToast('请输入学习目标','error'); return; }
+    closeModal('replan-modal');
+    usePrompt(`请根据我的新学习目标重新规划路径：${goal}`);
+}
+
+// ── 设置 ──
+function openSettings() { document.getElementById('user-dropdown').classList.remove('open'); openModal('settings-modal'); }
+function openProfileModal() { document.getElementById('user-dropdown').classList.remove('open'); showToast('学习画像完整版开发中','info'); }
+function toggleSetting(key) {
+    settings[key]=!settings[key];
+    document.getElementById('toggle-'+key).classList.toggle('on', settings[key]);
+}
+function clearHistory() {
+    if (!confirm('确定清空所有对话历史？')) return;
+    document.getElementById('history-list').innerHTML='<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px 8px">暂无对话记录</p>';
+    closeModal('settings-modal'); showToast('已清空','success');
+}
+
+// ── 分享 ──
+function shareChat() { openModal('share-modal'); }
+function copyShareLink() { navigator.clipboard.writeText('https://lumina-study.ai/share/abc123').then(()=>{ showToast('链接已复制','success'); closeModal('share-modal'); }); }
+
+// ── 语音 ──
+let isRecording=false;
+function toggleVoice() {
+    const btn=document.getElementById('voice-btn');
+    if (!isRecording) {
+        if (!navigator.mediaDevices) { showToast('当前浏览器不支持语音输入','error'); return; }
+        isRecording=true; btn.innerHTML='<i class="fa-solid fa-stop" style="font-size:13px;color:var(--danger)"></i>'; showToast('正在录音…','info');
+    } else {
+        isRecording=false; btn.innerHTML='<i class="fa-solid fa-microphone" style="font-size:13px"></i>'; showToast('语音转文字接入中','info');
+    }
+}
+
+// ── 模态框 ──
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openTasksModal()  { openModal('tasks-modal'); }
+function openReplanModal() { openModal('replan-modal'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m=>m.classList.remove('open')); });
+
+// ── Toast ──
+function showToast(msg, type='info') {
+    const icons={ success:'fa-circle-check', error:'fa-circle-exclamation', info:'fa-circle-info' };
+    const c=document.getElementById('toast-container');
+    const t=document.createElement('div'); t.className=`toast ${type==='info'?'':type}`;
+    t.innerHTML=`<i class="fa-solid ${icons[type]||icons.info}"></i> ${msg}`;
+    c.appendChild(t); setTimeout(()=>t.remove(),3000);
+}
+
+// ── 工具 ──
+function escapeHtml(s) { return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeJs(s)   { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/"/g,'\\"'); }
+</script>
 </body>
 </html>
