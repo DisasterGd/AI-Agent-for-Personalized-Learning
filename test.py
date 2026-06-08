@@ -1,7 +1,7 @@
 # 测试千问密钥是否有效
 import requests
 
-API_KEY = "sk-sdqwayufizuemhadjtzngpaxcwllxdphazrcjujthvjjaiyc"
+API_KEY = "here is nothing"
 
 url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
 headers = {
