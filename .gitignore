@@ -29,3 +29,7 @@ algorithm_knowledge/
 # ========== 系统临时垃圾文件 ==========
 .DS_Store
 Thumbs.db
+
+# ======== TiDB Cloud提供的CA证书 ========
+*.pem
+certs/

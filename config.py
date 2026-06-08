@@ -24,8 +24,25 @@ class Config:
     DB_TYPE = os.getenv("DB_TYPE", "sqlite")
 
     if DB_TYPE == "mysql":
-        # 本地开发：沿用原来你的MySQL环境变量配置
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+        # 从环境变量读取连接信息（注意：.env 中最后定义的 DB_HOST 等会覆盖前面的）
+        DB_HOST = os.getenv("DB_HOST")
+        DB_PORT = os.getenv("DB_PORT")
+        DB_USER = os.getenv("DB_USER")
+        DB_PASSWORD = os.getenv("DB_PASSWORD")
+        DB_NAME = os.getenv("DB_NAME")
+
+        # 构建基础 URI
+        base_uri = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+
+        # TiDB 需要 SSL CA 证书（如果提供了证书路径则添加）
+        tidb_ca_path = os.getenv("TIDB_CA_PATH")
+        if tidb_ca_path and os.path.exists(tidb_ca_path):
+            # 将反斜杠转换为正斜杠（避免转义问题）
+            tidb_ca_path = tidb_ca_path.replace("\\", "/")
+            SQLALCHEMY_DATABASE_URI = base_uri + f"&ssl_ca={tidb_ca_path}"
+        else:
+            # 本地 MySQL 或无需证书的情况
+            SQLALCHEMY_DATABASE_URI = base_uri
     else:
         # 所有人默认SQLite，Python内置，无需安装任何数据库软件
         SQLALCHEMY_DATABASE_URI = "sqlite:///flask_project.db"
