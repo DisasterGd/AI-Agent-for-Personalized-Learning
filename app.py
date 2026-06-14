@@ -47,6 +47,9 @@ class LearningPath(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     path_content = db.Column(db.Text, nullable=False)
 
+# ✅ 保留这个：在启动时自动创建/检查表
+with app.app_context():
+    db.create_all()
 
 # 注册蓝图
 from user_routes import user_bp
@@ -76,5 +79,5 @@ def init_db():
 
 
 if __name__ == '__main__':
-    init_db()
+    # init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
