@@ -18,7 +18,7 @@ def health_check():
     data = {
         "code": 200,
         "msg": "Software Cup backend is running, connected to Cherry Studio personalized learning agent",
-        "vector_db_path": Config.VECTOR_DB_PATH
+        "vector_db_path": Config.CHROMA_DB_PATH
     }
     return make_response(
         json.dumps(data, ensure_ascii=False),
@@ -44,7 +44,7 @@ def get_vector_path():
     return jsonify({
         "code": 200,
         "data": {
-            "vector_db_path": Config.VECTOR_DB_PATH,
+            "vector_db_path": Config.CHROMA_DB_PATH,
             "knowledge_base_path": Config.KNOWLEDGE_BASE_PATH
         }
     })
@@ -91,4 +91,3 @@ def path_detail():
     if not path:
         return jsonify({"code": 404, "msg": "No path"})
     return jsonify({"code": 200, "data": {"id": path.id, "content": path.path_content}})
-

@@ -66,7 +66,11 @@ class Config:
         os.path.dirname(os.path.abspath(__file__)),
         "algorithm_knowledge"
     )
-    VECTOR_DB_PATH = KNOWLEDGE_BASE_PATH
+    CHROMA_DB_PATH = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "chroma_db"
+    )
+    VECTOR_DB_PATH = CHROMA_DB_PATH  # 保持兼容旧代码
 
     # 创建目录
     @classmethod

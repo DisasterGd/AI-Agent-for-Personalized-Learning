@@ -21,8 +21,9 @@ LLM_MODEL = "deepseek-chat"
 LLM_TEMPERATURE = 0.35
 
 # -------------------- 知识库与向量库配置 --------------------
-VECTOR_STORE_PATH = "./my_chroma_db"
-ROOT_FOLDER = r"C:\PythonProject1\md_split_bind_path"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_FOLDER = os.path.join(BASE_DIR, "algorithm_knowledge")
+VECTOR_STORE_PATH = os.path.join(BASE_DIR, "chroma_db")
 CHUNK_SIZE = 600
 CHUNK_OVERLAP = 100
 # ==============================================================================
@@ -48,7 +49,8 @@ embedding = OpenAIEmbeddings(
     api_key=EMB_API_KEY,
     base_url=EMB_BASE_URL,
     model=EMB_MODEL,
-    timeout=30
+    timeout=120,
+    max_retries=3
 )
 
 # 向量数据库

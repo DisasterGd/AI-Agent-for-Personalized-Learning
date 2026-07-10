@@ -54,7 +54,10 @@ def login():
             "success": True,
             "msg": "Login success",
             "token": "token_" + str(uuid.uuid4()),
-            "user": {"username": user.username, "name": user.name, "major": user.major}
+            "user": {"student_id": user.username,
+                     "id": user.id,
+                     "name": user.name,
+                     "major": user.major}
         })
 
     except Exception as e:

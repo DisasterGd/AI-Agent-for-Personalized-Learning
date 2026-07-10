@@ -1,7 +1,10 @@
-from flask import Blueprint, request, make_response, jsonify
+from flask import Blueprint, request, Response, stream_with_context, make_response, jsonify
 from openai import OpenAI
 from config import Config
+from services.rag_service import rag_chat
+from app import db, User, ChatRecord
 import json
+import time
 from dotenv import load_dotenv
 import os
 
@@ -10,70 +13,93 @@ load_dotenv()
 ai_bp = Blueprint("ai", __name__, url_prefix="/api")
 
 
-@ai_bp.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    user_msg = data.get("message", "")
-    user_id = data.get("user_id", "guest")
-
-    if not user_msg:
-        return make_response(jsonify({"code": 400, "msg": "请输入内容"}), 400)
+# ================= 独立 SSE 生成器函数（方案三） =================
+def generate_sse_events(user_msg, user_id):
+    """
+    独立的 SSE 事件生成器
+    :param user_msg: 用户消息
+    :param user_id: 用户ID（字符串，可能是 "guest"）
+    :yield: SSE 格式的数据流
+    """
+    # 1. 推送“检索中”状态
+    yield f"data: {json.dumps({'type': 'step', 'content': '🔍 正在知识库中检索相关内容...'})}\n\n"
 
     try:
-        client = OpenAI(
-            api_key=Config.DEEPSEEK_API_KEY,
-            base_url=Config.DEEPSEEK_BASE_URL
-        )
-
-        # 开启流式输出
-        stream_response = client.chat.completions.create(
-            model=Config.DEEPSEEK_MODEL_NAME,
-            messages=[{"role": "user", "content": user_msg}],
-            stream=True,
-            temperature=0.7
-        )
-
-        # 逐块接收并拼接完整回复
-        full_response = ""
-        for chunk in stream_response:
-            # 流式响应中，每个 chunk 的 choices[0].delta.content 包含新内容
-            if chunk.choices and len(chunk.choices) > 0:
-                delta = chunk.choices[0].delta
-                if delta.content:
-                    content_piece = delta.content
-                    full_response += content_piece
-                    # 如果你需要实时推送给前端，可以在这里通过 WebSocket 或 SSE 发送
-
-        ai_response = full_response if full_response else "未获取到有效回复"
-
+        # 2. 调用 RAG 检索 + 大模型生成
+        answer, source_docs = rag_chat(user_msg, top_k=2)
     except Exception as e:
-        print("DeepSeek报错:", str(e))
-        ai_response = "服务暂时异常，请稍后再试"
+        error_msg = f"RAG 服务异常: {str(e)}"
+        print(f"❌ {error_msg}")
+        yield f"data: {json.dumps({'type': 'error', 'content': error_msg})}\n\n"
+        return
 
-    # 保存到数据库（处理 user_id 类型问题，见错误2）
+    # 3. 推送引用来源
+    sources = [doc.metadata.get("file_name", "未知文档") for doc in source_docs]
+    yield f"data: {json.dumps({'type': 'sources', 'content': sources})}\n\n"
+
+    # 4. 推送“生成回答”状态
+    yield f"data: {json.dumps({'type': 'step', 'content': '✍️ 正在生成回答...'})}\n\n"
+
+    # 5. 模拟流式逐词推送
+    words = answer.split(' ')
+    total = len(words)
+    for idx, word in enumerate(words):
+        chunk = word + (' ' if idx < total - 1 else '')
+        yield f"data: {json.dumps({'type': 'text', 'content': chunk})}\n\n"
+        time.sleep(0.05)  # 打字速度控制
+
+    # 6. 保存对话记录到数据库（在流式结束后）
     try:
-        # 只有当 user_id 是有效的整数时才保存
         if user_id and user_id != "guest":
-            # 确保 user_id 是整数
             user_id_int = int(user_id)
-            # 可选：检查该用户是否存在
-            from app import User
             user_exists = User.query.get(user_id_int)
             if user_exists:
                 new_record = ChatRecord(
                     user_id=user_id_int,
                     query=user_msg,
-                    response=ai_response
+                    response=answer
                 )
                 db.session.add(new_record)
                 db.session.commit()
+                print(f"✅ 对话记录已保存 (user_id={user_id_int})")
     except ValueError:
-        print(f"无效的 user_id 格式: {user_id}，跳过保存")
+        print(f"⚠️ 无效的 user_id 格式: {user_id}，跳过保存")
     except Exception as e:
-        print("数据库保存失败:", str(e))
+        print(f"❌ 数据库保存失败: {str(e)}")
 
-    result = {"choices": [{"message": {"content": ai_response}}]}
-    return make_response(jsonify(result), 200, {"Content-Type": "application/json; charset=utf-8"})
+    # 7. 异步触发画像更新（不阻塞用户）
+    try:
+        import threading
+        from profile_routes import async_update_profile
+        if user_id and user_id != "guest":
+            threading.Thread(
+                target=async_update_profile,
+                args=(int(user_id), user_msg, answer),
+                daemon=True
+            ).start()
+            print(f"🔄 已触发画像更新任务 (user_id={user_id})")
+    except Exception as e:
+        print(f"⚠️ 触发画像更新失败: {e}")
+
+    # 8. 发送完成信号（done 放在最后）
+    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
+
+# ================= 路由接口 =================
+@ai_bp.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    user_msg = data.get("message", "").strip()
+    user_id = data.get("user_id", "guest")
+
+    if not user_msg:
+        return make_response(jsonify({"code": 400, "msg": "请输入内容"}), 400)
+
+    # 返回 SSE 流式响应，调用独立的生成器函数
+    return Response(
+        stream_with_context(generate_sse_events(user_msg, user_id)),
+        mimetype='text/event-stream'
+    )
 # from flask import Blueprint, request, make_response
 # import requests
 # import json
