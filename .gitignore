@@ -33,3 +33,7 @@ Thumbs.db
 # ======== TiDB Cloud提供的CA证书 ========
 *.pem
 certs/
+
+# ========= 向量数据库（本地生成，不提交） =========
+chroma_db/
+my_chroma_db/
