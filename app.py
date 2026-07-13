@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 import sys
 from datetime import datetime
+from resource_routes import resource_bp
+from path_routes import path_bp
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -78,6 +80,8 @@ app.register_blueprint(user_bp)
 app.register_blueprint(ai_bp)
 app.register_blueprint(views_bp)
 app.register_blueprint(profile_bp)
+app.register_blueprint(resource_bp)
+app.register_blueprint(path_bp)
 
 
 @app.route('/login')

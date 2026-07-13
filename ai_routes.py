@@ -80,6 +80,19 @@ def generate_sse_events(user_msg, user_id):
             print(f"🔄 已触发画像更新任务 (user_id={user_id})")
     except Exception as e:
         print(f"⚠️ 触发画像更新失败: {e}")
+    # ---- 画像更新触发代码 ----
+    try:
+        if user_id and user_id != "guest":
+            from profile_routes import async_update_profile
+            import threading
+            threading.Thread(
+                target=async_update_profile,
+                args=(int(user_id), user_msg, answer),
+                daemon=True
+            ).start()
+            print(f"🔄 已触发画像更新 (user_id={user_id})")
+    except Exception as e:
+        print(f"⚠️ 画像更新触发失败: {e}")
 
     # 8. 发送完成信号（done 放在最后）
     yield f"data: {json.dumps({'type': 'done'})}\n\n"
@@ -165,4 +178,3 @@ def chat():
 #     result = {"choices": [{"message": {"content": ai_response}}]}
 #     return make_response(json.dumps(result, ensure_ascii=False), 200,
 #                          {"Content-Type": "application/json; charset=utf-8"})
-

@@ -963,7 +963,9 @@
      JavaScript
 ═══════════════════════════════════════════ -->
 <script>
-const API_BASE = 'https://ai-agent-for-personalized-learning.onrender.com';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:5000'
+    : 'https://ai-agent-for-personalized-learning.onrender.com';
 
 const OOP_TASKS = [
     { id:1, text:'理解类与实例：创建一个 Animal 类', done:true },
@@ -1161,7 +1163,7 @@ function setGenerating(val) {
     else     { s.classList.remove('hidden'); t.classList.add('hidden'); t.classList.remove('flex'); }
 }
 
-// ── 发送 ──
+// ── 发送（SSE 流式版） ──
 async function handleSend() {
     if (isGenerating) return;
     const input = document.getElementById('chat-input');
@@ -1183,26 +1185,125 @@ async function handleSend() {
     abortController = new AbortController();
 
     try {
-        const res = await fetch(`${API_BASE}/api/chat`, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+(localStorage.getItem('auth_token')||'') },
-            body: JSON.stringify({ user_id: user.student_id||user.id||'guest', message:text,
-                model:document.getElementById('current-model').textContent,
-                domain:document.getElementById('current-domain').textContent }),
+        const response = await fetch(`${API_BASE}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: user.student_id || user.id || 'guest',
+                message: text,
+                model: document.getElementById('current-model').textContent,
+                domain: document.getElementById('current-domain').textContent
+            }),
             signal: abortController.signal
         });
-        const data = await res.json();
-        const answer = data?.choices?.[0]?.message?.content || data?.answer || data?.message || '后端返回格式异常';
-        const el = document.getElementById(loadingId);
-        if (el) { el.className = 'md-body'; el.innerHTML = renderMarkdown(answer); }
-        if (settings.autotitle && messages.length === 1) {
-            document.getElementById('chat-title').textContent = text.slice(0,22) + (text.length>22?'…':'');
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/event-stream')) {
+            // ----- SSE 流式处理 -----
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let aiContent = '';
+            let isFirstChunk = true;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const parts = buffer.split('\n\n');
+                buffer = parts.pop() || '';
+
+                for (const part of parts) {
+                    if (!part.startsWith('data: ')) continue;
+                    const jsonStr = part.slice(6).trim();
+                    if (!jsonStr) continue;
+                    try {
+                        const event = JSON.parse(jsonStr);
+                        if (event.type === 'step') {
+                            updateProgress(event.content);
+                        } else if (event.type === 'sources') {
+                            console.log('📚 引用资料:', event.content);
+                            showToast('已引用 ' + event.content.length + ' 份知识库资料', 'success');
+                        } else if (event.type === 'text') {
+                            if (isFirstChunk) {
+                                removeLoadingDots(loadingId);
+                                isFirstChunk = false;
+                            }
+                            aiContent += event.content;
+                            updateAIMessage(loadingId, aiContent);
+                        } else if (event.type === 'error') {
+                            showToast('❌ ' + event.content, 'error');
+                        } else if (event.type === 'done') {
+                            messages.push({ role: 'assistant', content: aiContent });
+                            if (settings.autotitle && messages.length === 2) {
+                                document.getElementById('chat-title').textContent = text.slice(0, 22) + (text.length > 22 ? '…' : '');
+                            }
+                            setGenerating(false);
+                            scrollToBottom();
+                            clearProgress();
+                        }
+                    } catch (e) {
+                        console.warn('解析 SSE 事件失败:', jsonStr, e);
+                    }
+                }
+            }
+        } else {
+            // ----- 降级方案：普通 JSON -----
+            const data = await response.json();
+            const answer = data?.choices?.[0]?.message?.content || data?.answer || data?.message || '后端返回格式异常';
+            const el = document.getElementById(loadingId);
+            if (el) { el.className = 'md-body'; el.innerHTML = renderMarkdown(answer); }
+            if (settings.autotitle && messages.length === 1) {
+                document.getElementById('chat-title').textContent = text.slice(0, 22) + (text.length > 22 ? '…' : '');
+            }
+            setGenerating(false);
+            scrollToBottom();
         }
-    } catch(err) {
-        if (err.name === 'AbortError') return;
-        const el = document.getElementById(loadingId);
-        if (el) el.innerHTML = `<span style="color:var(--danger);font-size:13px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px"></i>连接后端失败，请确认服务已启动（${API_BASE}）</span>`;
-    } finally { setGenerating(false); scrollToBottom(); }
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            showToast('已停止生成', 'info');
+        } else {
+            console.error('请求失败:', err);
+            const el = document.getElementById(loadingId);
+            if (el) el.innerHTML = `<span style="color:var(--danger);font-size:13px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px"></i>连接后端失败（${API_BASE}）</span>`;
+            showToast('连接后端失败，请检查服务是否启动', 'error');
+        }
+        setGenerating(false);
+    }
+}
+
+// ── SSE 辅助函数（放在 handleSend 后面） ──
+function updateProgress(text) {
+    let el = document.getElementById('progress-status');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'progress-status';
+        el.style.cssText = 'font-size:12px;color:var(--text-muted);padding:6px 12px;text-align:center;border-bottom:1px solid var(--border);background:var(--bg-page);border-radius:6px;margin-bottom:8px';
+        document.getElementById('messages-area').prepend(el);
+    }
+    el.textContent = text;
+}
+
+function clearProgress() {
+    const el = document.getElementById('progress-status');
+    if (el) el.remove();
+}
+
+function removeLoadingDots(msgId) {
+    const el = document.getElementById(msgId);
+    if (el) {
+        el.className = 'md-body';
+        el.innerHTML = '';
+    }
+}
+
+function updateAIMessage(msgId, content) {
+    const el = document.getElementById(msgId);
+    if (el) {
+        el.innerHTML = renderMarkdown(content);
+        scrollToBottom();
+    }
 }
 
 // ── 消息渲染 ──
